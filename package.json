@@ -1,0 +1,21 @@
+{
+    "name": "photon-msg-server",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "scripts": {
+        "format": "bunx --bun biome check . --write"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "axios": "^1.13.1",
+        "form-data": "^4.0.4",
+        "reflect-metadata": "^0.2.2",
+        "socket.io-client": "^4.8.1"
+    }
+}
