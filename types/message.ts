@@ -25,6 +25,28 @@ export interface MessageData {
     attachments?: Attachment[];
 }
 
+export interface Message {
+    guid: string;
+    text: string;
+    handle?: Handle | null;
+    chats?: Chat[];
+    attachments?: Attachment[];
+    subject: string;
+    error: number;
+    dateCreated: number;
+    dateRead: number | null;
+    dateDelivered: number | null;
+    isFromMe: boolean;
+    isDelivered?: boolean;
+    isArchived: boolean;
+    isAudioMessage?: boolean;
+    datePlayed?: number | null;
+    itemType: number;
+    groupTitle: string | null;
+    groupActionType: number;
+    dateEdited?: number | null;
+}
+
 export type MessageResponse = {
     originalROWID: number;
     tempGuid?: string;

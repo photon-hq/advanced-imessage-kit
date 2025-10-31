@@ -13,10 +13,11 @@ export class ICloudModule {
         return response.data.data;
     }
 
-    async getContactCard(address: string): Promise<any> {
-        const response = await this.http.get("/api/v1/icloud/contact", {
-            params: { address },
-        });
-        return response.data.data;
+    async refreshFindMyFriends(): Promise<void> {
+        await this.http.post("/api/v1/icloud/findmy/friends/refresh");
+    }
+
+    async refreshFindMyDevices(): Promise<void> {
+        await this.http.post("/api/v1/icloud/findmy/devices/refresh");
     }
 }

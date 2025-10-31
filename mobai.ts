@@ -8,6 +8,7 @@ import {
     ChatModule,
     ContactModule,
     FaceTimeModule,
+    HandleModule,
     ICloudModule,
     MessageModule,
     ScheduledMessageModule,
@@ -36,13 +37,16 @@ export class AdvancedIMessageKit extends EventEmitter {
     public readonly http: AxiosInstance;
     public readonly socket: ReturnType<typeof io>;
 
-    // Modules
     public readonly attachments: AttachmentModule;
+    public readonly messages: MessageModule;
     public readonly chats: ChatModule;
+
     public readonly contacts: ContactModule;
+    public readonly handles: HandleModule;
+
     public readonly facetime: FaceTimeModule;
     public readonly icloud: ICloudModule;
-    public readonly messages: MessageModule;
+
     public readonly scheduledMessages: ScheduledMessageModule;
     public readonly server: ServerModule;
 
@@ -66,11 +70,15 @@ export class AdvancedIMessageKit extends EventEmitter {
         this.socket = io(this.config.serverUrl);
 
         this.attachments = new AttachmentModule(this.http);
+        this.messages = new MessageModule(this.http);
         this.chats = new ChatModule(this.http);
+
         this.contacts = new ContactModule(this.http);
+        this.handles = new HandleModule(this.http);
+
         this.facetime = new FaceTimeModule(this.http);
         this.icloud = new ICloudModule(this.http);
-        this.messages = new MessageModule(this.http);
+
         this.scheduledMessages = new ScheduledMessageModule(this.http);
         this.server = new ServerModule(this.http);
     }

@@ -9,7 +9,7 @@ async function main() {
     sdk.on("ready", async () => {
         try {
             if (CONTACT_ADDRESS) {
-                const contactCard = await sdk.icloud.getContactCard(CONTACT_ADDRESS);
+                const contactCard = await sdk.contacts.getContactCard(CONTACT_ADDRESS);
 
                 console.log(`${contactCard.firstName || ""} ${contactCard.lastName || ""}`);
                 console.log(`${contactCard.emails?.[0] || "no email"}`);
@@ -17,7 +17,7 @@ async function main() {
             }
 
             if (CHAT_GUID) {
-                await sdk.chats.shareContactCard(CHAT_GUID);
+                await sdk.contacts.shareContactCard(CHAT_GUID);
                 console.log("shared contact card");
             }
         } catch (error) {

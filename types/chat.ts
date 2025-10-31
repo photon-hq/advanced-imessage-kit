@@ -6,6 +6,7 @@ export interface Chat {
     chatIdentifier: string;
     displayName?: string;
     participants?: Handle[];
+    style?: number;
 }
 
 export type ChatResponse = {
