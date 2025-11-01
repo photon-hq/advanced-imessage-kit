@@ -135,13 +135,18 @@ export class WebSocketAdapter extends EventEmitter {
                             const eventName = data.type;
                             const eventData = data.data;
                             this.logger.debug(`Emitting JSON event: ${eventName} (data: ${JSON.stringify(eventData).substring(0, 100)})`);
+                            
+                            // Emit as specific event
                             this.emit(eventName, eventData);
+                            // Also emit as "message" for request/response handling
+                            this.emit("message", data);
                         } else {
                             // Direct event format: { event: "event_name", data: {...} }
                             const eventName = data.event || "message";
                             const eventData = data.data || data;
                             this.logger.debug(`Emitting JSON event (fallback): ${eventName} (data: ${JSON.stringify(eventData).substring(0, 100)})`);
                             this.emit(eventName, eventData);
+                            this.emit("message", data);
                         }
                     } catch (jsonError) {
                         // Not JSON, emit raw message
@@ -258,6 +263,67 @@ export class WebSocketAdapter extends EventEmitter {
             this.logger.error(`Failed to send message: ${error}`);
             this.emit("error", error);
         }
+    }
+
+    /**
+     * Send a command request and wait for response
+     * Returns a Promise that resolves with the response data
+     */
+    async request(command: string, params?: any, timeoutMs: number = 30000): Promise<any> {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            throw new Error(`WebSocket not connected (command: ${command})`);
+        }
+
+        const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const requestType = `request:${command}`;
+
+        return new Promise((resolve, reject) => {
+            const timeoutTimer = setTimeout(() => {
+                cleanup();
+                reject(new Error(`Request timeout: ${command} (${timeoutMs}ms)`));
+            }, timeoutMs);
+
+            const responseHandler = (response: any) => {
+                // Handle both direct message objects and parsed JSON
+                const message = typeof response === 'string' ? JSON.parse(response) : response;
+                
+                if (message.requestId === requestId) {
+                    if (message.type === `response:${command}`) {
+                        cleanup();
+                        resolve(message.data);
+                    } else if (message.type === `error:${command}`) {
+                        cleanup();
+                        reject(new Error(message.data?.error || `Command failed: ${command}`));
+                    }
+                }
+            };
+
+            const cleanup = () => {
+                clearTimeout(timeoutTimer);
+                this.off("message", responseHandler);
+            };
+
+            this.on("message", responseHandler);
+
+            try {
+                if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                    cleanup();
+                    reject(new Error(`WebSocket closed during request (command: ${command})`));
+                    return;
+                }
+                
+                const message = {
+                    type: requestType,
+                    requestId,
+                    data: params || {},
+                };
+                this.ws.send(JSON.stringify(message));
+                this.logger.debug(`Sent command request: ${command}, requestId: ${requestId}`);
+            } catch (error) {
+                cleanup();
+                reject(error);
+            }
+        });
     }
 
     /**
