@@ -3,6 +3,7 @@ import axios, { type AxiosInstance } from "axios";
 import io from "socket.io-client";
 import { getLogger, setGlobalLogLevel } from "./lib/Loggable";
 import type { LogLevel } from "./lib/Logger";
+import { WebSocketAdapter } from "./lib/WebSocketAdapter";
 import {
     AttachmentModule,
     ChatModule,
@@ -35,7 +36,7 @@ export class AdvancedIMessageKit extends EventEmitter {
     public readonly config: ClientConfig;
     public readonly logger = getLogger("AdvancedIMessageKit");
     public readonly http: AxiosInstance;
-    public readonly socket: ReturnType<typeof io>;
+    public readonly socket: ReturnType<typeof io> | WebSocketAdapter;
 
     public readonly attachments: AttachmentModule;
     public readonly messages: MessageModule;
@@ -56,6 +57,7 @@ export class AdvancedIMessageKit extends EventEmitter {
         this.config = {
             serverUrl: "http://localhost:1234",
             logLevel: "info",
+            connectionMode: "socket.io",
             ...config,
         };
 
@@ -63,11 +65,35 @@ export class AdvancedIMessageKit extends EventEmitter {
             setGlobalLogLevel(this.config.logLevel as LogLevel);
         }
 
+        // Determine base URL for HTTP requests
+        const serverUrl = this.config.serverUrl || "http://localhost:1234";
+        let httpBaseURL = serverUrl;
+        if (this.config.connectionMode === "websocket") {
+            // For WebSocket mode, convert wss:// to https:// and remove /ws/{uuid} path
+            httpBaseURL = serverUrl
+                .replace(/\/ws\/[^/]+$/, "")
+                .replace(/^wss:\/\//, "https://")
+                .replace(/^ws:\/\//, "http://");
+        }
+
         this.http = axios.create({
-            baseURL: this.config.serverUrl,
+            baseURL: httpBaseURL,
         });
 
-        this.socket = io(this.config.serverUrl);
+        // Initialize socket based on connection mode
+        if (this.config.connectionMode === "websocket") {
+            let wsUrl: string;
+            if (serverUrl.startsWith("ws://") || serverUrl.startsWith("wss://")) {
+                wsUrl = serverUrl;
+            } else if (this.config.websocketUUID) {
+                wsUrl = `${serverUrl.replace(/^http/, "ws")}/ws/${this.config.websocketUUID}`;
+            } else {
+                throw new Error("websocketUUID is required when connectionMode is 'websocket' and serverUrl is not a WebSocket URL");
+            }
+            this.socket = new WebSocketAdapter(wsUrl);
+        } else {
+        this.socket = io(serverUrl);
+        }
 
         this.attachments = new AttachmentModule(this.http);
         this.messages = new MessageModule(this.http);
@@ -111,7 +137,12 @@ export class AdvancedIMessageKit extends EventEmitter {
             this.emit("disconnect");
         });
 
-        if (this.socket.connected) {
+        // Check connection status (socket.io has 'connected' property, WebSocketAdapter has getter)
+        const isConnected = this.config.connectionMode === "websocket" 
+            ? (this.socket as WebSocketAdapter).connected
+            : (this.socket as ReturnType<typeof io>).connected;
+
+        if (isConnected) {
             this.logger.info("Already connected to iMessage server");
             this.emit("ready");
             return;
@@ -122,13 +153,21 @@ export class AdvancedIMessageKit extends EventEmitter {
             this.emit("ready");
         });
 
-        if (!this.socket.connected) {
-            this.socket.connect();
+        if (!isConnected) {
+            if (this.config.connectionMode === "websocket") {
+                (this.socket as WebSocketAdapter).connect();
+            } else {
+                (this.socket as ReturnType<typeof io>).connect();
+            }
         }
     }
 
     async disconnect() {
-        this.socket.disconnect();
+        if (this.config.connectionMode === "websocket") {
+            (this.socket as WebSocketAdapter).disconnect();
+        } else {
+            (this.socket as ReturnType<typeof io>).disconnect();
+        }
     }
 }
 
