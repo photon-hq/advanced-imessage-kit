@@ -1,7 +1,7 @@
 import { SDK } from "../index";
 
 async function autoReplyHeyTest() {
-    console.log("🤖 自动回复测试 - 收到消息后回复 \"Hey！\" + 原消息");
+    console.log('🤖 自动回复测试 - 收到消息后回复 "Hey！" + 原消息');
     console.log("服务器: https://u1.imsgd.photon.codes");
     console.log("=".repeat(50));
 
@@ -41,8 +41,7 @@ async function autoReplyHeyTest() {
 
             try {
                 // 获取原始消息内容
-                const originalMessage =
-                    message.text || message.attributedBody?.[0]?.string || "No text";
+                const originalMessage = message.text || message.attributedBody?.[0]?.string || "No text";
 
                 // 发送自动回复：Hey！ + 原始消息
                 const replyMessage = `Hey！${originalMessage}`;
