@@ -4,105 +4,93 @@
 
 # Advanced iMessage Kit
 
-> A powerful, type-safe iMessage SDK for macOS with real-time capabilities
+> Powerful TypeScript iMessage SDK with real-time message processing
 
 </div>
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-^5-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Advanced iMessage Kit provides a comprehensive SDK for **reading**, **sending**, and **automating** iMessage conversations on macOS. Built for developers creating **AI agents**, **automation tools**, and **chat applications** that need deep iMessage integration.
+Advanced iMessage Kit is a comprehensive iMessage SDK for **reading**, **sending**, and **automating** iMessage conversations on macOS. Designed for building **AI agents**, **automation tools**, and **chat applications**.
 
 ## Features
 
-- **🔒 Type-Safe** - Full TypeScript support with comprehensive type definitions
-- **⚡ Real-Time** - WebSocket-based event system for instant message updates
+- **🔒 Type Safe** - Complete TypeScript support with full type definitions
+- **⚡ Real-time Communication** - WebSocket-based event system for instant message updates
 - **📱 Complete API** - Send text, attachments, reactions, edit messages, and more
-- **👥 Group Management** - Create groups, manage participants, set icons
+- **👥 Group Management** - Create groups, manage members, set group icons
 - **📎 Rich Attachments** - Send images, files, stickers, and contact cards
-- **🔍 Advanced Queries** - Powerful message filtering and search capabilities
+- **🔍 Advanced Querying** - Powerful message filtering and search capabilities
 - **📊 Analytics** - Message counts, delivery status, and chat statistics
-- **🎯 Event-Driven** - Listen to new messages, typing indicators, and status changes
+- **🎯 Event-driven** - Listen for new messages, typing indicators, and status changes
 
 ## Quick Start
 
-```typescript
-import { AdvancedIMessageKit } from './index'
+### Installation
 
-// Initialize SDK
+```bash
+npm install @photon-ai/advanced-imessage-kit
+# or
+bun add @photon-ai/advanced-imessage-kit
+```
+
+### Basic Usage
+
+```typescript
+import { AdvancedIMessageKit } from '@photon-ai/advanced-imessage-kit'
+
 const sdk = new AdvancedIMessageKit({
-    serverUrl: 'http://localhost:1234',
-    logLevel: 'info'
+    serverUrl: '{your-subdomain}.imsgd.photon.codes' // Your subdomain is the unique link address assigned to you
 })
+
+// Connect to the server
+await sdk.connect()
 
 // Listen for new messages
 sdk.on('new-message', (message) => {
-    console.log(`${message.handle?.address}: ${message.text}`)
+    console.log('New message:', message.text)
 })
 
-// Connect and start listening
-await sdk.connect()
+// Send a message
+await sdk.messages.sendMessage({
+    chatGuid: 'any;-;+1234567890',
+    message: 'Hello World!'
+})
+
+// Disconnect when done
+await sdk.disconnect()
 ```
 
-## Installation
+## Core API
 
-This is a private package. To use it in your project:
-
-```bash
-# Clone or download the project
-# Then install dependencies
-npm install
-
-# Or if using bun
-bun install
-```
-
-## Prerequisites
-
-Advanced iMessage Kit requires the **Advanced iMessage Kit Server** to be running locally. The server handles the actual iMessage integration and database access.
-
-### Server Setup
-
-1. Download and run the Advanced iMessage Kit Server
-2. Grant **Full Disk Access** to your terminal/IDE in System Settings
-3. Start the server on `http://localhost:1234` (default)
-
-## Core APIs
-
-### Initialization
+### Initialization & Connection
 
 ```typescript
-import { AdvancedIMessageKit, SDK } from './index'
+import { AdvancedIMessageKit } from '@photon-ai/advanced-imessage-kit'
 
-// Method 1: Direct instantiation
 const sdk = new AdvancedIMessageKit({
-    serverUrl: 'http://localhost:1234',
-    logLevel: 'debug'
+    serverUrl: '{your-subdomain}.imsgd.photon.codes',  // Your subdomain is the unique link address assigned to you
+    logLevel: 'info'                                   // Log level: 'debug' | 'info' | 'warn' | 'error'
 })
 
-// Method 2: Singleton pattern
-const sdk = SDK({
-    serverUrl: 'http://localhost:1234'
+// Connect to server
+await sdk.connect()
+
+// Check connection status
+sdk.on('ready', () => {
+    console.log('SDK is ready!')
 })
+
+// Graceful disconnect
+await sdk.disconnect()
 ```
 
 ### Connection Management
 
 ```typescript
-// Connect to server
-await sdk.connect()
-
-// Listen for connection events
-sdk.on('ready', () => {
-    console.log('SDK ready')
-})
-
-sdk.on('error', (error) => {
-    console.error('Connection error:', error)
-})
-
-// Disconnect when done
-await sdk.disconnect()
+// Message deduplication (prevents duplicate processing)
+sdk.clearProcessedMessages(1000)  // Clear old processed message records
+const count = sdk.getProcessedMessageCount()  // Get processed message count
 ```
 
 ## Message Operations
@@ -116,17 +104,23 @@ const message = await sdk.messages.sendMessage({
     message: 'Hello World!'
 })
 
-// Send with options
+// Send message with options
 await sdk.messages.sendMessage({
     chatGuid: 'any;-;+1234567890',
     message: 'Important message',
     subject: 'Subject line',
-    effectId: 'com.apple.messages.effect.CKConfettiEffect',
-    tempGuid: 'temp-' + Date.now() // Required when using effects or subject
+    effectId: 'com.apple.messages.effect.CKConfettiEffect'
+})
+
+// Reply to message
+await sdk.messages.sendMessage({
+    chatGuid: 'any;-;+1234567890',
+    message: 'This is a reply',
+    selectedMessageGuid: 'original-message-guid'
 })
 ```
 
-### Message Queries
+### Message Querying
 
 ```typescript
 // Get messages with filters
@@ -139,9 +133,10 @@ const messages = await sdk.messages.getMessages({
 // Get message counts
 const totalCount = await sdk.messages.getMessageCount({
     chatGuid: 'any;-;+1234567890',
-    after: 1640995200000, // timestamp
-    before: 1641081600000 // timestamp
+    after: 1640995200000, // Timestamp
+    before: 1641081600000 // Timestamp
 })
+
 const sentCount = await sdk.messages.getSentMessageCount()
 ```
 
@@ -159,7 +154,7 @@ await sdk.messages.editMessage({
 await sdk.messages.sendReaction({
     chatGuid: 'any;-;+1234567890',
     messageGuid: 'message-guid',
-    reaction: 'love', // Valid: love, like, dislike, laugh, emphasize, question, -love, -like, etc.
+    reaction: 'love', // Options: love, like, dislike, laugh, emphasize, question, -love, -like, etc.
     partIndex: 0 // Optional: defaults to 0
 })
 
@@ -187,11 +182,7 @@ const newChat = await sdk.chats.createChat({
     addresses: ['+1234567890', '+0987654321'],
     message: 'Hello everyone!',
     service: 'iMessage', // 'iMessage' or 'SMS'
-    method: 'private-api', // 'apple-script' or 'private-api'
-    tempGuid: 'temp-guid-123', // optional
-    subject: 'Group Subject', // optional
-    effectId: 'com.apple.MobileSMS.expressivesend.impact', // optional
-    attributedBody: {} // optional, for rich text
+    method: 'private-api' // 'apple-script' or 'private-api'
 })
 ```
 
@@ -219,55 +210,57 @@ await sdk.chats.leaveChat('chat-guid')
 // Set group icon
 await sdk.chats.setGroupIcon('chat-guid', '/path/to/image.jpg')
 
+// Get group icon
+const iconBuffer = await sdk.chats.getGroupIcon('chat-guid')
+
 // Remove group icon
 await sdk.chats.removeGroupIcon('chat-guid')
-
-// Download group icon
-const iconBuffer = await sdk.chats.getGroupIcon('chat-guid')
 ```
 
 ### Chat Status
 
 ```typescript
-// Mark as read
+// Mark as read/unread
 await sdk.chats.markChatRead('chat-guid')
-
-// Mark as unread
 await sdk.chats.markChatUnread('chat-guid')
 
 // Typing indicators
 await sdk.chats.startTyping('chat-guid')
 await sdk.chats.stopTyping('chat-guid')
+
+// Get chat messages
+const messages = await sdk.chats.getChatMessages('chat-guid', {
+    limit: 100,
+    offset: 0,
+    sort: 'DESC'
+})
 ```
 
 ## Attachments & Media
 
-### Attachment Operations
+### Sending Attachments
 
 ```typescript
-// Send attachment
-await sdk.attachments.sendAttachment({
-    chatGuid: 'chat-guid',
+// Send file attachment
+const message = await sdk.attachments.sendAttachment({
+    chatGuid: 'any;-;+1234567890',
     filePath: '/path/to/file.jpg',
-    fileName: 'image.jpg' // Optional: display name
+    fileName: 'custom-name.jpg' // Optional
 })
-```
+
 // Send sticker
 await sdk.attachments.sendSticker({
-    chatGuid: 'chat-guid', 
+    chatGuid: 'any;-;+1234567890',
     filePath: '/path/to/sticker.png',
-    fileName: 'sticker.png', // optional
-    selectedMessageGuid: 'message-guid' // optional, for replying to a message
+    selectedMessageGuid: 'message-to-reply-to' // Optional
 })
+```
 
-// Get attachment info
+### Attachment Info
+
+```typescript
+// Get attachment details
 const attachment = await sdk.attachments.getAttachment('attachment-guid')
-
-// Download attachment
-const buffer = await sdk.attachments.downloadAttachment('attachment-guid', {
-    original: true,
-    quality: 100
-})
 
 // Get attachment count
 const count = await sdk.attachments.getAttachmentCount()
@@ -281,10 +274,10 @@ const count = await sdk.attachments.getAttachmentCount()
 // Get all contacts
 const contacts = await sdk.contacts.getContacts()
 
-// Get contact card by address
+// Get contact card
 const contactCard = await sdk.contacts.getContactCard('+1234567890')
 
-// Share contact card in chat
+// Share contact card
 await sdk.contacts.shareContactCard('chat-guid')
 
 // Check if should share contact
@@ -294,105 +287,48 @@ const shouldShare = await sdk.contacts.shouldShareContact('chat-guid')
 ### Handle Operations
 
 ```typescript
-// Get handle count
-const count = await sdk.handles.getHandleCount()
-
 // Query handles
-const handles = await sdk.handles.queryHandles({
-    address: '+1234567890'
+const result = await sdk.handles.queryHandles({
+    address: '+1234567890',
+    with: ['chats'],
+    limit: 50
 })
 
-// Get specific handle
-const handle = await sdk.handles.getHandle('handle-id')
+// Get handle availability
+const isAvailable = await sdk.handles.getHandleAvailability('handle-guid', 'imessage')
 
-// Check handle availability
-const availability = await sdk.handles.getHandleAvailability('handle-id', 'imessage')
-
-// Get handle focus status
-const focusStatus = await sdk.handles.getHandleFocusStatus('handle-id')
+// Get focus status
+const focusStatus = await sdk.handles.getHandleFocusStatus('handle-guid')
 ```
 
-## Real-Time Events
-
-### Message Events
+## Real-time Events
 
 ```typescript
-// New message received
+// Message events
 sdk.on('new-message', (message) => {
-    console.log('New message:', message.text)
+    console.log('New message received:', message.text)
 })
 
-// Message updated (delivery/read status)
 sdk.on('updated-message', (message) => {
-    if (message.dateRead) {
-        console.log('Message read')
-    } else if (message.dateDelivered) {
-        console.log('Message delivered')
-    }
-})
-
-// Message send error
-sdk.on('message-send-error', (error) => {
-    console.error('Send failed:', error)
-})
-```
-
-### Chat Events
-
-```typescript
-// Chat read status changed
-sdk.on('chat-read-status-changed', (data) => {
-    console.log('Chat read status:', data)
-})
-
-// Group events
-sdk.on('group-name-change', (message) => {
-    console.log('Group renamed:', message.groupTitle)
-})
-
-sdk.on('participant-added', (message) => {
-    console.log('Participant added:', message.otherHandle)
-})
-
-sdk.on('participant-removed', (message) => {
-    console.log('Participant removed:', message.otherHandle)
-})
-
-sdk.on('participant-left', (message) => {
-    console.log('Participant left:', message.otherHandle)
-})
-
-sdk.on('group-icon-changed', (data) => {
-    console.log('Group icon changed:', data)
-})
-
-sdk.on('group-icon-removed', (data) => {
-    console.log('Group icon removed:', data)
+    console.log('Message updated:', message.guid)
 })
 
 // Typing indicators
 sdk.on('typing-indicator', (data) => {
-    console.log('Typing:', data.isTyping)
-})
-```
-
-### System Events
-
-```typescript
-// FaceTime call status changes
-sdk.on('ft-call-status-changed', (data) => {
-    console.log('FaceTime status:', data.status, 'for', data.handle)
+    console.log('Typing status changed:', data)
 })
 
-// Find My location updates
-sdk.on('new-findmy-location', (data) => {
-    console.log('New location for:', data.handle, 'at', data.coordinates)
+// Connection events
+sdk.on('ready', () => {
+    console.log('SDK connected and ready')
 })
 
-// New server connection
-sdk.on('new-server', (data) => {
-    console.log('New server connected:', data)
+sdk.on('error', (error) => {
+    console.error('SDK error:', error)
 })
+
+// Remove event listeners
+sdk.off('new-message', messageHandler)
 ```
 
 ## Advanced Features
@@ -403,18 +339,23 @@ sdk.on('new-server', (data) => {
 // Create FaceTime link
 const link = await sdk.facetime.createFaceTimeLink()
 console.log('FaceTime link:', link)
+
+// Listen for FaceTime status changes
+sdk.on('facetime-status-change', (data) => {
+    console.log('FaceTime status:', data.status)
+})
 ```
 
-### iCloud Integration
+### iCloud Services
 
 ```typescript
-// Get Find My friends
+// Get Find My Friends
 const friends = await sdk.icloud.getFindMyFriends()
 
-// Get Find My devices
+// Get Find My Devices
 const devices = await sdk.icloud.getFindMyDevices()
 
-// Refresh Find My data
+// Refresh data
 await sdk.icloud.refreshFindMyFriends()
 await sdk.icloud.refreshFindMyDevices()
 ```
@@ -422,39 +363,34 @@ await sdk.icloud.refreshFindMyDevices()
 ### Scheduled Messages
 
 ```typescript
-// Schedule a message
-await sdk.scheduledMessages.createScheduledMessage({
+// Create scheduled message
+const scheduled = await sdk.scheduledMessages.createScheduledMessage({
     chatGuid: 'any;-;+1234567890',
-    message: 'Scheduled message',
-    scheduledFor: new Date(Date.now() + 3600000), // Date object
-    schedule: {
-        type: 'once' // or 'recurring'
-    }
-})
-
-// Get scheduled messages
-const scheduled = await sdk.scheduledMessages.getScheduledMessages()
-
-// Update scheduled message
-await sdk.scheduledMessages.updateScheduledMessage('message-id', {
-    chatGuid: 'any;-;+1234567890',
-    message: 'Updated message',
-    scheduledFor: new Date(Date.now() + 7200000), // Date object
+    message: 'This message was scheduled!',
+    scheduledFor: new Date(Date.now() + 60000), // 1 minute from now
     schedule: { type: 'once' }
 })
 
+// Get all scheduled messages
+const allScheduled = await sdk.scheduledMessages.getScheduledMessages()
+
+// Update scheduled message
+await sdk.scheduledMessages.updateScheduledMessage('schedule-id', {
+    message: 'Updated message'
+})
+
 // Delete scheduled message
-await sdk.scheduledMessages.deleteScheduledMessage('message-id')
+await sdk.scheduledMessages.deleteScheduledMessage('schedule-id')
 ```
 
-### Server Management
+### Server Information
 
 ```typescript
-// Get server information
+// Get server info
 const serverInfo = await sdk.server.getServerInfo()
 
 // Get message statistics
-const messageStats = await sdk.server.getMessageStats()
+const stats = await sdk.server.getMessageStats()
 
 // Get server logs
 const logs = await sdk.server.getServerLogs(100)
@@ -464,14 +400,6 @@ const alerts = await sdk.server.getAlerts()
 
 // Mark alerts as read
 await sdk.server.markAlertAsRead(['alert-id-1', 'alert-id-2'])
-
-// Get media statistics
-const mediaStats = await sdk.server.getMediaStatistics({
-    only: ['images', 'videos']
-})
-
-// Get media statistics by chat
-const chatMediaStats = await sdk.server.getMediaStatisticsByChat('chat-guid-here')
 ```
 
 ## Error Handling
@@ -491,11 +419,11 @@ try {
 }
 ```
 
-## Configuration
+## Configuration Options
 
 ```typescript
 interface ClientConfig {
-    serverUrl?: string      // Default: 'http://localhost:1234'
+    serverUrl?: string      // Your subdomain: '{your-subdomain}.imsgd.photon.codes'
     logLevel?: 'debug' | 'info' | 'warn' | 'error'  // Default: 'info'
 }
 ```
@@ -523,7 +451,7 @@ sdk.on('error', handleError)
 sdk.off('new-message', handleNewMessage)
 ```
 
-### Performance
+### Performance Optimization
 
 ```typescript
 // Use pagination for large queries
@@ -532,6 +460,12 @@ const messages = await sdk.messages.getMessages({
     limit: 100,
     offset: 0
 })
+
+// Clear processed message records (prevents memory leaks)
+sdk.clearProcessedMessages(1000)
+
+// Get processed message count
+const processedCount = sdk.getProcessedMessageCount()
 ```
 
 ## Examples
@@ -540,22 +474,23 @@ Check the `/examples` directory for complete working examples:
 
 - `demo-basic.ts` - Basic SDK usage and event listening
 - `demo-advanced.ts` - Advanced SDK features
-- `message-send.ts` - Sending messages
-- `message-attachment.ts` - Sending files and images
-- `message-contact-card.ts` - Sending contact cards
-- `message-sticker.ts` - Sending stickers
-- `message-edit.ts` - Editing messages
-- `message-unsend.ts` - Unsending messages
-- `message-reaction.ts` - Adding reactions
+- `message-send.ts` - Send messages
+- `message-attachment.ts` - Send files and images
+- `message-contact-card.ts` - Send contact cards
+- `message-edit.ts` - Edit messages
+- `message-unsend.ts` - Unsend messages
+- `message-reaction.ts` - Add reactions
+- `message-reply.ts` - Reply to messages
 - `message-typing.ts` - Typing indicators
 - `message-scheduled.ts` - Scheduled messages
-- `message-search.ts` - Searching messages
+- `message-search.ts` - Search messages
 - `message-stats.ts` - Message statistics
 - `chat-group.ts` - Group chat management
-- `chat-fetch.ts` - Fetching chat data
+- `chat-fetch.ts` - Fetch chat data
 - `contact-list.ts` - Contact management
 - `facetime-link.ts` - FaceTime integration
 - `findmy-friends.ts` - Find My integration
+- `auto-reply-hey.ts` - Auto-reply example
 
 ## License
 

@@ -1,13 +1,61 @@
 {
-    "name": "photon-msg-server",
-    "module": "index.ts",
+    "name": "@photon-ai/advanced-imessage-kit",
+    "version": "1.0.0",
+    "description": "Powerful TypeScript iMessage SDK with real-time message processing",
+    "keywords": [
+        "imessage",
+        "sdk",
+        "typescript",
+        "macos",
+        "messaging",
+        "automation",
+        "ai"
+    ],
+    "author": "Photon AI",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/photon-hq/advanced-imessage-kit.git"
+    },
+    "homepage": "https://github.com/photon-hq/advanced-imessage-kit#readme",
+    "bugs": {
+        "url": "https://github.com/photon-hq/advanced-imessage-kit/issues"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "sideEffects": false,
+    "module": "./dist/index.js",
     "type": "module",
-    "private": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "private": false,
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org/",
+        "access": "public"
+    },
+    "files": [
+        "dist/",
+        "README.md",
+        "LICENSE"
+    ],
     "devDependencies": {
         "@types/bun": "latest"
     },
     "scripts": {
-        "format": "bunx --bun biome check . --write"
+        "format": "bunx @biomejs/biome check . --write",
+        "lint": "bunx @biomejs/biome check .",
+        "type-check": "bunx tsc --noEmit",
+        "build": "bunx tsc --project tsconfig.build.json",
+        "test": "echo \"No tests specified\" && exit 0",
+        "prepublishOnly": "bun run format && bun run lint && bun run type-check && bun run build",
+        "publish:npm": "npm publish --access public"
     },
     "peerDependencies": {
         "typescript": "^5"

@@ -1,0 +1,36 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "noEmit": false,
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": false,
+        "verbatimModuleSyntax": true,
+        "module": "ESNext",
+        "target": "ES2020",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "moduleDetection": "force"
+    },
+    "include": [
+        "index.ts",
+        "mobai.ts",
+        "events.ts",
+        "modules/**/*",
+        "types/**/*",
+        "lib/**/*",
+        "interfaces/**/*"
+    ],
+    "exclude": [
+        "examples/**/*",
+        "dist/**/*",
+        "node_modules/**/*",
+        "**/*.test.ts",
+        "**/*.spec.ts"
+    ]
+}

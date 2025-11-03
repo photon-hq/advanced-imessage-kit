@@ -28,7 +28,9 @@ async function main() {
             console.log(`sent: ${message.guid}`);
             if (message.attachments && message.attachments.length > 0) {
                 const att = message.attachments[0];
-                console.log(`${att.transferName} (${att.mimeType || "unknown"})`);
+                if (att) {
+                    console.log(`${att.transferName} (${att.mimeType || "unknown"})`);
+                }
             }
         } catch (error) {
             handleError(error, "Failed to send attachment");
