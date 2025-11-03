@@ -51,8 +51,8 @@ export class AdvancedIMessageKit extends EventEmitter {
     public readonly server: ServerModule;
 
     // Message deduplication feature
-    // 
-    // Purpose: Prevent message reply loops caused by server repeatedly pushing 
+    //
+    // Purpose: Prevent message reply loops caused by server repeatedly pushing
     // the same message content with different GUIDs due to unstable Socket.IO connections.
     // This is especially problematic when the polling transport causes connection issues.
     private processedMessages = new Set<string>();
@@ -76,7 +76,7 @@ export class AdvancedIMessageKit extends EventEmitter {
 
         this.socket = io(this.config.serverUrl, {
             // 🚨 IMPORTANT: Polling transport configuration notes
-            // 
+            //
             // Root cause analysis:
             // 1. Socket.IO 'polling' transport can cause unstable connections in certain network environments
             // 2. When "xhr poll error" occurs, Socket.IO attempts to reconnect
@@ -88,9 +88,9 @@ export class AdvancedIMessageKit extends EventEmitter {
             // - Set reasonable timeout to avoid frequent reconnections
             // - Use forceNew to ensure fresh connections and avoid state pollution
             // - Implement client-side message deduplication as the last line of defense
-            transports: ['websocket'], // Only WebSocket - polling disabled to prevent message duplication
-             timeout: 10000,        // 10 second timeout to avoid overly frequent reconnections
-             forceNew: true         // Force new connection to avoid connection state pollution
+            transports: ["websocket"], // Only WebSocket - polling disabled to prevent message duplication
+            timeout: 10000, // 10 second timeout to avoid overly frequent reconnections
+            forceNew: true, // Force new connection to avoid connection state pollution
         });
 
         this.attachments = new AttachmentModule(this.http);
@@ -127,7 +127,7 @@ export class AdvancedIMessageKit extends EventEmitter {
         for (const eventName of serverEvents) {
             this.socket.on(eventName, (...args: any[]) => {
                 // Message deduplication logic
-                // 
+                //
                 // Problem: When Socket.IO connection is unstable (especially with polling transport),
                 // the server may repeatedly push the same message content with different GUIDs.
                 // This bypasses traditional GUID-based deduplication and causes message reply loops.
@@ -135,7 +135,7 @@ export class AdvancedIMessageKit extends EventEmitter {
                 // Solution: Use GUID as unique identifier for deduplication
                 if (eventName === "new-message" && args.length > 0) {
                     const message = args[0];
-                    if (message && message.guid) {
+                    if (message?.guid) {
                         // Check if this message has already been processed
                         if (this.processedMessages.has(message.guid)) {
                             this.logger.debug(`Message already processed, skipping duplicate: ${message.guid}`);
@@ -145,7 +145,7 @@ export class AdvancedIMessageKit extends EventEmitter {
                         this.processedMessages.add(message.guid);
                     }
                 }
-                
+
                 this.emit(eventName, ...args);
             });
         }
@@ -184,7 +184,7 @@ export class AdvancedIMessageKit extends EventEmitter {
             const messages = Array.from(this.processedMessages);
             this.processedMessages.clear();
             // Keep the most recent portion of messages
-            messages.slice(-Math.floor(maxSize / 2)).forEach(guid => {
+            messages.slice(-Math.floor(maxSize / 2)).forEach((guid) => {
                 this.processedMessages.add(guid);
             });
             this.logger.debug(`Cleared processed message records, retained ${this.processedMessages.size} messages`);
