@@ -46,8 +46,7 @@
         "LICENSE"
     ],
     "devDependencies": {
-        "@types/bun": "latest",
-        "tsc-alias": "^1.8.16"
+        "@types/bun": "latest"
     },
     "scripts": {
         "format": "bunx @biomejs/biome check . --write",
