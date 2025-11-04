@@ -115,6 +115,14 @@ jobs:
           echo "- Build Date: ${{ steps.version.outputs.build_date }}" >> CHANGELOG.md
           echo "- Git Hash: ${{ steps.version.outputs.git_hash }}" >> CHANGELOG.md
 
+      - name: Package build artifacts
+        id: bundle
+        run: |
+          ARCHIVE_NAME="advanced-imessage-kit-${{ steps.version.outputs.version }}.tgz"
+          # Create a single archive containing the dist contents
+          tar -czf "$ARCHIVE_NAME" -C dist .
+          echo "archive=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -123,8 +131,9 @@ jobs:
           body_path: CHANGELOG.md
           draft: false
           prerelease: false
-          files: |
-            dist/**/*
+          files: ${{ steps.bundle.outputs.archive }}
+          overwrite_files: true
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
