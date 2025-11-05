@@ -46,6 +46,7 @@
         "LICENSE"
     ],
     "devDependencies": {
+        "@biomejs/biome": "^2.3.3",
         "@types/bun": "latest"
     },
     "scripts": {
@@ -58,10 +59,10 @@
         "publish:npm": "npm publish --access public"
     },
     "peerDependencies": {
-        "typescript": "^5"
+        "typescript": "^5.9.3"
     },
     "dependencies": {
-        "axios": "^1.13.1",
+        "axios": "^1.13.2",
         "form-data": "^4.0.4",
         "reflect-metadata": "^0.2.2",
         "socket.io-client": "^4.8.1"

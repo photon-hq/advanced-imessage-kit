@@ -65,20 +65,20 @@ export class AttachmentModule {
         return response.data.data.blurhash;
     }
 
-    private async sendAttachmentBase(
-        options: SendAttachmentOptions | SendStickerOptions,
-        isSticker = false,
-    ): Promise<Message> {
+    async sendAttachment(options: SendAttachmentOptions): Promise<Message> {
         const fileBuffer = await readFile(options.filePath);
         const fileName = options.fileName || path.basename(options.filePath);
 
         const form = new FormData();
         form.append("chatGuid", options.chatGuid);
         form.append("attachment", fileBuffer, fileName);
+        form.append("name", fileName);
         form.append("tempGuid", randomUUID());
-
-        if (isSticker) {
-            form.append("isSticker", "true");
+        if (options.isAudioMessage !== undefined) {
+            form.append("isAudioMessage", options.isAudioMessage.toString());
+            if (options.isAudioMessage) {
+                form.append("method", "private-api");
+            }
         }
 
         const response = await this.http.post("/api/v1/message/attachment", form, {
@@ -86,10 +86,6 @@ export class AttachmentModule {
         });
 
         return response.data.data;
-    }
-
-    async sendAttachment(options: SendAttachmentOptions): Promise<Message> {
-        return this.sendAttachmentBase(options);
     }
 
     async sendSticker(options: SendStickerOptions): Promise<Message> {
