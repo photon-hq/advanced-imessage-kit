@@ -911,3 +911,7 @@ bun run examples/auto-reply-hey.ts
 ## License
 
 MIT License
+
+## Author
+
+@Artist-MOBAI
