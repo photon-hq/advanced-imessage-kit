@@ -1,8 +1,8 @@
 import { SDK } from "../index";
 
 async function autoReplyHeyTest() {
-    console.log('🤖 自动回复测试 - 收到消息后回复 "Hey！" + 原消息');
-    console.log("服务器: https://u1.imsgd.photon.codes");
+    console.log('🤖 Auto-reply Test - Reply with "Hey!" + original message when receiving a message');
+    console.log("Server: https://u1.imsgd.photon.codes");
     console.log("=".repeat(50));
 
     const sdk = SDK({
@@ -10,40 +10,40 @@ async function autoReplyHeyTest() {
         logLevel: "info",
     });
 
-    // 注册事件监听器
+    // Register event listeners
     sdk.on("connect", () => {
-        console.log("✅ [SDK] Socket.IO 连接成功");
+        console.log("✅ [SDK] Socket.IO connected successfully");
     });
 
     sdk.on("disconnect", () => {
-        console.log("❌ [SDK] Socket.IO 断开连接");
+        console.log("❌ [SDK] Socket.IO disconnected");
     });
 
     sdk.on("error", (error: any) => {
-        console.log("🚨 [SDK] 错误:", error);
+        console.log("🚨 [SDK] Error:", error);
     });
 
     sdk.on("ready", () => {
-        console.log("✅ SDK就绪，自动回复功能已启动！");
+        console.log("✅ SDK ready, auto-reply function started!");
     });
 
     sdk.on("new-message", async (message: any) => {
-        console.log("📨 收到新消息:");
-        console.log("  发送者:", message.handle?.address || "Unknown");
-        console.log("  内容:", message.text || message.attributedBody || "No text");
+        console.log("📨 Received new message:");
+        console.log("  Sender:", message.handle?.address || "Unknown");
+        console.log("  Content:", message.text || message.attributedBody || "No text");
         console.log("  GUID:", message.guid);
-        console.log("  来自我:", message.isFromMe);
+        console.log("  From me:", message.isFromMe);
 
-        // 如果消息不是来自我自己，则自动回复
+        // If the message is not from me, send an auto-reply
         if (!message.isFromMe && message.chats && message.chats.length > 0) {
             const chatGuid = message.chats[0].guid;
-            console.log("🤖 准备自动回复到聊天:", chatGuid);
+            console.log("🤖 Preparing to send auto-reply to chat:", chatGuid);
 
             try {
-                // 获取原始消息内容
+                // Get original message content
                 const originalMessage = message.text || message.attributedBody?.[0]?.string || "No text";
 
-                // 发送自动回复：Hey！ + 原始消息
+                // Send auto-reply: Hey! + original message
                 const replyMessage = `Hey！${originalMessage}`;
 
                 const response = await sdk.messages.sendMessage({
@@ -51,22 +51,22 @@ async function autoReplyHeyTest() {
                     message: replyMessage,
                 });
 
-                console.log("✅ 自动回复发送成功:", response);
+                console.log("✅ Auto-reply sent successfully:", response);
             } catch (error) {
-                console.error("❌ 自动回复发送失败:", error);
+                console.error("❌ Auto-reply failed to send:", error);
             }
         } else if (message.isFromMe) {
-            console.log("⏭️  跳过自己发送的消息");
+            console.log("⏭️  Skipping message sent by me");
         }
     });
 
-    console.log("🚀 开始连接...");
+    console.log("🚀 Starting connection...");
     await sdk.connect();
 
-    // 保持连接
+    // Keep connection alive
     process.on("SIGINT", () => {
-        console.log("\n👋 正在断开连接...");
-        console.log(`📊 已处理消息数量: ${sdk.getProcessedMessageCount()}`);
+        console.log("\n👋 Disconnecting...");
+        console.log(`📊 Processed message count: ${sdk.getProcessedMessageCount()}`);
         sdk.disconnect();
         process.exit(0);
     });
