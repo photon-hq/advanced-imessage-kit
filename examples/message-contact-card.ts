@@ -1,34 +1,44 @@
-import { createSDK, handleError } from "./utils";
+/**
+ * Example: Share Contact Card
+ * Demonstrates how to retrieve and share contact information
+ */
 
-const CHAT_GUID = process.env.CHAT_GUID || "";
-const CONTACT_ADDRESS = process.env.CONTACT_ADDRESS;
+import { AdvancedIMessageKit } from "../index";
+
+const CHAT_GUID = process.env.CHAT_GUID || "any;-;+1234567890";
+const CONTACT_NAME = process.env.CONTACT_NAME || "";
 
 async function main() {
-    const sdk = createSDK();
-
-    sdk.on("ready", async () => {
-        try {
-            if (CONTACT_ADDRESS) {
-                const contactCard = await sdk.contacts.getContactCard(CONTACT_ADDRESS);
-
-                console.log(`${contactCard.firstName || ""} ${contactCard.lastName || ""}`);
-                console.log(`${contactCard.emails?.[0] || "no email"}`);
-                console.log(`${contactCard.phones?.[0] || "no phone"}`);
-            }
-
-            if (CHAT_GUID) {
-                await sdk.contacts.shareContactCard(CHAT_GUID);
-                console.log("shared contact card");
-            }
-        } catch (error) {
-            handleError(error, "Failed to share contact card");
-        }
-
-        await sdk.disconnect();
-        process.exit(0);
+    const sdk = new AdvancedIMessageKit({
+        serverUrl: "http://localhost:1234",
+        logLevel: "info",
     });
 
     await sdk.connect();
+
+    try {
+        // List contacts
+        const contacts = await sdk.getContacts();
+        console.log(`Found ${contacts.length} contacts\n`);
+
+        // Show first contact as example
+        if (contacts.length > 0) {
+            const contact = contacts[0];
+            console.log(`Example contact: ${contact.displayName || contact.firstName || "Unknown"}`);
+            if (contact.phoneNumbers && contact.phoneNumbers.length > 0) {
+                console.log(`  Phone: ${contact.phoneNumbers[0].address || "N/A"}`);
+            }
+            if (contact.emails && contact.emails.length > 0) {
+                console.log(`  Email: ${contact.emails[0].address || "N/A"}`);
+            }
+        }
+
+        console.log("\nNote: Contact sharing requires advanced API methods");
+    } catch (error) {
+        console.error("Failed to retrieve contacts:", error);
+    } finally {
+        await sdk.close();
+    }
 }
 
 main().catch(console.error);

@@ -1,50 +1,57 @@
-import { createSDK, handleError, handleExit } from "./utils";
+/**
+ * Example: Advanced Demo
+ * Demonstrates multiple advanced features and event listening
+ */
+
+import { AdvancedIMessageKit } from "../index";
 
 async function main() {
-    const sdk = createSDK({ logLevel: "debug" });
-
-    sdk.on("ready", async () => {
-        try {
-            const chatList = await sdk.chats.getChats();
-            console.log(`${chatList.length} chats:`);
-            chatList.slice(0, 10).forEach((chat, i) => {
-                console.log(`  ${i + 1}. ${chat.displayName || chat.chatIdentifier}`);
-            });
-
-            if (chatList.length > 0) {
-                const chat = chatList[0];
-                if (chat) {
-                    console.log(
-                        `\n${chat.displayName || chat.chatIdentifier} (${chat.participants?.length || 0} people)`,
-                    );
-                }
-            }
-
-            const serverInfo = await sdk.server.getServerInfo();
-            console.log(`\n${JSON.stringify(serverInfo, null, 2)}`);
-        } catch (error) {
-            handleError(error, "Setup failed");
-        }
-    });
-
-    sdk.on("new-message", (message) => {
-        console.log(`\n${JSON.stringify(message, null, 2)}`);
-    });
-
-    sdk.on("typing-indicator", () => {
-        console.log("typing");
-    });
-
-    sdk.on("group-icon-changed", () => {
-        console.log("icon changed");
-    });
-
-    sdk.on("config-update", () => {
-        console.log("config updated");
+    const sdk = new AdvancedIMessageKit({
+        serverUrl: "http://localhost:1234",
+        logLevel: "debug",
     });
 
     await sdk.connect();
-    handleExit(sdk);
+
+    try {
+        // Fetch chats
+        const chatList = await sdk.listChats();
+        console.log(`${chatList.length} chats:`);
+        chatList.slice(0, 10).forEach((chat, i) => {
+            console.log(`  ${i + 1}. ${chat.displayName || chat.chatIdentifier}`);
+        });
+
+        if (chatList.length > 0) {
+            const chat = chatList[0];
+            if (chat) {
+                console.log(
+                    `\nFirst chat: ${chat.displayName || chat.chatIdentifier} (${chat.participants?.length || 0} participants)`,
+                );
+            }
+        }
+
+        // Get server info
+        const serverInfo = await sdk.getServerInfo();
+        console.log(`\nServer info: ${JSON.stringify(serverInfo, null, 2)}`);
+
+        // Start watching for messages
+        await sdk.startWatching({
+            onNewMessage: (message) => {
+                console.log(`\nNew message: ${JSON.stringify(message, null, 2)}`);
+            },
+        });
+
+        console.log("\nWatching for messages...");
+    } catch (error) {
+        console.error("Setup failed:", error);
+    }
+
+    // Handle exit
+    process.on("SIGINT", async () => {
+        console.log("\nShutting down...");
+        await sdk.close();
+        process.exit(0);
+    });
 }
 
 main().catch(console.error);

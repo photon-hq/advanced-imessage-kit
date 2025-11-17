@@ -1,45 +1,42 @@
-import { createSDK, handleError, handleExit } from "./utils";
+/**
+ * Example: Typing Indicators
+ * Demonstrates how to show typing indicators (requires private API)
+ */
+
+import { AdvancedIMessageKit } from "../index";
 
 const CHAT_GUID = process.env.CHAT_GUID || "any;-;+1234567890";
 
 async function main() {
-    const sdk = createSDK();
-
-    sdk.on("ready", async () => {
-        try {
-            console.log(`starting typing for ${CHAT_GUID}`);
-            await sdk.chats.startTyping(CHAT_GUID);
-
-            await new Promise((resolve) => setTimeout(resolve, 3000));
-
-            await sdk.messages.sendMessage({
-                chatGuid: CHAT_GUID,
-                message: "Hello! I was typing for a moment 😊",
-            });
-
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            await sdk.chats.startTyping(CHAT_GUID);
-
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            await sdk.chats.stopTyping(CHAT_GUID);
-        } catch (error) {
-            handleError(error, "Typing indicator demo failed");
-        }
-
-        await sdk.disconnect();
-        process.exit(0);
-    });
-
-    sdk.on("typing-indicator", (data) => {
-        const typingData = data as { display?: boolean; guid?: string };
-        const status = typingData.display ? "typing" : "stopped";
-        console.log(`${status} in ${typingData.guid}`);
+    const sdk = new AdvancedIMessageKit({
+        serverUrl: "http://localhost:1234",
+        logLevel: "info",
     });
 
     await sdk.connect();
-    handleExit(sdk);
+
+    try {
+        console.log(`Starting typing indicator for ${CHAT_GUID}`);
+        await sdk.startTyping(CHAT_GUID);
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        await sdk.send(CHAT_GUID, "Hello! I was typing for a moment");
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        await sdk.startTyping(CHAT_GUID);
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        await sdk.stopTyping(CHAT_GUID);
+
+        console.log("Typing indicator demo complete");
+    } catch (error) {
+        console.error("Typing indicator demo failed:", error);
+    } finally {
+        await sdk.close();
+    }
 }
 
 main().catch(console.error);

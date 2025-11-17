@@ -1,69 +1,58 @@
-import { createSDK, handleError } from "./utils";
+/**
+ * Example: Scheduled Messages
+ * Demonstrates how to create and manage scheduled messages (requires private API)
+ */
+
+import { AdvancedIMessageKit } from "../index";
 
 const CHAT_GUID = process.env.CHAT_GUID || "any;-;+1234567890";
 
 async function main() {
-    const sdk = createSDK();
-
-    sdk.on("ready", async () => {
-        try {
-            const fiveMinutesFromNow = new Date(Date.now() + 5 * 60 * 1000);
-
-            const scheduled = await sdk.scheduledMessages.createScheduledMessage({
-                chatGuid: CHAT_GUID,
-                message: "This message was scheduled!",
-                scheduledFor: fiveMinutesFromNow,
-                schedule: { type: "once" },
-            });
-
-            console.log(`scheduled: ${scheduled.id} for ${fiveMinutesFromNow.toLocaleString()}`);
-
-            const tomorrow9AM = new Date();
-            tomorrow9AM.setDate(tomorrow9AM.getDate() + 1);
-            tomorrow9AM.setHours(9, 0, 0, 0);
-
-            const recurring = await sdk.scheduledMessages.createScheduledMessage({
-                chatGuid: CHAT_GUID,
-                message: "Good morning!",
-                scheduledFor: tomorrow9AM,
-                schedule: {
-                    type: "recurring",
-                    intervalType: "day",
-                    interval: 1,
-                },
-            });
-
-            console.log(`recurring: ${recurring.id}`);
-
-            const allScheduled = await sdk.scheduledMessages.getScheduledMessages();
-            console.log(`${allScheduled.length} scheduled\n`);
-
-            allScheduled.forEach((msg, i) => {
-                console.log(`${i + 1}. ${msg.payload.message}`);
-                console.log(`   ${msg.id} (${msg.schedule.type}) - ${new Date(msg.scheduledFor).toLocaleString()}`);
-            });
-
-            if (allScheduled.length > 0) {
-                const msg = allScheduled[0];
-                const newTime = new Date(Date.now() + 10 * 60 * 1000);
-
-                const updated = await sdk.scheduledMessages.updateScheduledMessage(msg.id, {
-                    ...msg.payload,
-                    message: "Updated message!",
-                    scheduledFor: newTime,
-                });
-
-                console.log(`updated ${msg.id} to ${new Date(updated.scheduledFor).toLocaleString()}`);
-            }
-        } catch (error) {
-            handleError(error, "Failed to manage scheduled messages");
-        }
-
-        await sdk.disconnect();
-        process.exit(0);
+    const sdk = new AdvancedIMessageKit({
+        serverUrl: "http://localhost:1234",
+        logLevel: "info",
     });
 
     await sdk.connect();
+
+    try {
+        const fiveMinutesFromNow = new Date(Date.now() + 5 * 60 * 1000);
+
+        console.log(`Creating scheduled message for ${fiveMinutesFromNow.toLocaleString()}`);
+        const scheduled = await sdk.createScheduledMessage(
+            CHAT_GUID,
+            "This message was scheduled!",
+            fiveMinutesFromNow,
+        );
+
+        console.log(`Scheduled message created: ${scheduled.id}`);
+
+        const tomorrow9AM = new Date();
+        tomorrow9AM.setDate(tomorrow9AM.getDate() + 1);
+        tomorrow9AM.setHours(9, 0, 0, 0);
+
+        console.log(`Creating recurring scheduled message for ${tomorrow9AM.toLocaleString()}`);
+        const recurring = await sdk.createRecurringMessage(CHAT_GUID, "Good morning!", tomorrow9AM, {
+            intervalType: "day",
+            interval: 1,
+        });
+
+        console.log(`Recurring message created: ${recurring.id}`);
+
+        const allScheduled = await sdk.getScheduledMessages();
+        console.log(`\nTotal scheduled messages: ${allScheduled.length}\n`);
+
+        allScheduled.forEach((msg, i) => {
+            console.log(`${i + 1}. ${msg.payload.message}`);
+            console.log(`   ID: ${msg.id}`);
+            console.log(`   Type: ${msg.schedule.type}`);
+            console.log(`   Scheduled for: ${new Date(msg.scheduledFor).toLocaleString()}`);
+        });
+    } catch (error) {
+        console.error("Failed to manage scheduled messages:", error);
+    } finally {
+        await sdk.close();
+    }
 }
 
 main().catch(console.error);

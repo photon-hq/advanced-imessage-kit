@@ -1,26 +1,27 @@
-import { createSDK, handleError } from "./utils";
+/**
+ * Example: FaceTime Links
+ * Demonstrates how to create FaceTime links (requires private API)
+ */
+
+import { AdvancedIMessageKit } from "../index";
 
 async function main() {
-    const sdk = createSDK();
-
-    sdk.on("ready", async () => {
-        try {
-            const link = await sdk.facetime.createFaceTimeLink();
-            console.log(`${link}`);
-        } catch (error) {
-            handleError(error, "Failed to create FaceTime link");
-        }
-
-        await sdk.disconnect();
-        process.exit(0);
-    });
-
-    sdk.on("facetime-status-change", (data: unknown) => {
-        const { callUuid, status } = data as { callUuid?: string; status?: string };
-        console.log(`\n${status} (${callUuid})`);
+    const sdk = new AdvancedIMessageKit({
+        serverUrl: "http://localhost:1234",
+        logLevel: "info",
     });
 
     await sdk.connect();
+
+    try {
+        console.log("Creating FaceTime link...");
+        const link = await sdk.createFaceTimeLink();
+        console.log(`FaceTime link: ${link}`);
+    } catch (error) {
+        console.error("Failed to create FaceTime link:", error);
+    } finally {
+        await sdk.close();
+    }
 }
 
 main().catch(console.error);

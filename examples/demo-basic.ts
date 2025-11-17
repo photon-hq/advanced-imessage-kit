@@ -1,36 +1,39 @@
+/**
+ * Example: Basic Demo
+ * Simple example showing basic SDK usage and event listening
+ */
+
 import { AdvancedIMessageKit } from "../index";
-import { createSDK, handleExit } from "./utils";
 
 async function main() {
-    const sdk = createSDK();
-
-    sdk.on("ready", () => {
-        console.log("ready");
+    const sdk = new AdvancedIMessageKit({
+        serverUrl: "http://localhost:1234",
+        logLevel: "info",
     });
 
-    sdk.on("new-message", (message: unknown) => {
-        const msg = message as {
-            handle?: { address?: string };
-            text?: string;
-        };
-        console.log(`\n${msg.handle?.address ?? "unknown"}: ${msg.text ?? "(no text)"}`);
-    });
-
-    sdk.on("updated-message", (message: unknown) => {
-        const msg = message as {
-            dateDelivered?: number;
-            dateRead?: number;
-        };
-        const status = msg.dateRead ? "read" : msg.dateDelivered ? "delivered" : "sent";
-        console.log(status);
-    });
-
-    sdk.on("error", (error: Error) => {
-        console.error("error:", error.message);
-    });
-
+    console.log("Connecting to iMessage server...");
     await sdk.connect();
-    handleExit(sdk);
+    console.log("Connected! Listening for messages...\n");
+
+    await sdk.startWatching({
+        onNewMessage: (message) => {
+            console.log(`\n${message.handle?.address ?? "Unknown"}: ${message.text ?? "(no text)"}`);
+        },
+        onMessageUpdated: (message) => {
+            const status = message.dateRead ? "read" : message.dateDelivered ? "delivered" : "sent";
+            console.log(`Message ${status}`);
+        },
+        onError: (error) => {
+            console.error("Error:", error.message);
+        },
+    });
+
+    // Handle exit
+    process.on("SIGINT", async () => {
+        console.log("\nShutting down...");
+        await sdk.close();
+        process.exit(0);
+    });
 }
 
 main().catch(console.error);

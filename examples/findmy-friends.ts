@@ -1,75 +1,64 @@
-import { createSDK, handleError } from "./utils";
+/**
+ * Example: Find My Friends
+ * Demonstrates how to retrieve Find My Friends and Devices data (requires private API)
+ */
+
+import { AdvancedIMessageKit } from "../index";
 
 async function main() {
-    const sdk = createSDK();
-
-    sdk.on("ready", async () => {
-        try {
-            const friends = await sdk.icloud.getFindMyFriends();
-
-            if (friends?.length) {
-                console.log(`${friends.length} friends\n`);
-
-                friends.forEach((friend, i) => {
-                    console.log(`${i + 1}. ${friend.name || "unknown"} (${friend.id})`);
-                    if (friend.location) {
-                        const { latitude, longitude, horizontalAccuracy, timestamp } = friend.location;
-                        console.log(`   ${latitude}, ${longitude} (${horizontalAccuracy || "?"}m)`);
-                        if (timestamp) {
-                            console.log(`   ${new Date(timestamp).toLocaleString()}`);
-                        }
-                    } else {
-                        console.log("   no location");
-                    }
-                    console.log();
-                });
-            } else {
-                console.log("no friends\n");
-            }
-
-            const devices = await sdk.icloud.getFindMyDevices();
-
-            if (devices?.length) {
-                console.log(`${devices.length} devices\n`);
-
-                devices.forEach((device, i) => {
-                    console.log(`${i + 1}. ${device.name || "unknown"}`);
-                    console.log(`   ${device.deviceModel || "unknown"}`);
-
-                    if (device.location) {
-                        const { latitude, longitude, horizontalAccuracy } = device.location;
-                        console.log(`   ${latitude}, ${longitude} (${horizontalAccuracy || "?"}m)`);
-                    }
-
-                    if (device.batteryLevel != null) {
-                        console.log(`   ${(device.batteryLevel * 100).toFixed(0)}% battery`);
-                    }
-                    console.log();
-                });
-            } else {
-                console.log("no devices\n");
-            }
-        } catch (error) {
-            handleError(error, "Failed to fetch Find My data");
-        }
-
-        await sdk.disconnect();
-        process.exit(0);
-    });
-
-    sdk.on("findmy-location-update", (data: unknown) => {
-        const { name, friendId, location } = data as {
-            name?: string;
-            friendId?: string;
-            location?: { latitude?: number; longitude?: number };
-        };
-        console.log(`\n${name || friendId}`);
-        if (location) {
-            console.log(`  ${location.latitude}, ${location.longitude}`);
-        }
+    const sdk = new AdvancedIMessageKit({
+        serverUrl: "http://localhost:1234",
+        logLevel: "info",
     });
 
     await sdk.connect();
+
+    try {
+        const friends = await sdk.getFindMyFriends();
+
+        if (friends?.length) {
+            console.log(`Found ${friends.length} friends\n`);
+
+            friends.forEach((friend, i) => {
+                console.log(`${i + 1}. ${friend.name || "Unknown"} (${friend.id})`);
+                if (friend.location) {
+                    const { latitude, longitude, horizontalAccuracy, timestamp } = friend.location;
+                    console.log(`   Location: ${latitude}, ${longitude}`);
+                    console.log(`   Accuracy: ${horizontalAccuracy || "Unknown"}m`);
+                    if (timestamp) {
+                        console.log(`   Updated: ${new Date(timestamp).toLocaleString()}`);
+                    }
+                } else {
+                    console.log("   No location available");
+                }
+                console.log();
+            });
+        } else {
+            console.log("No friends found\n");
+        }
+
+        const devices = await sdk.getFindMyDevices();
+
+        if (devices?.length) {
+            console.log(`Found ${devices.length} devices\n`);
+
+            devices.forEach((device, i) => {
+                console.log(`${i + 1}. ${device.name || "Unknown"}`);
+                console.log(`   Model: ${device.deviceModel || "Unknown"}`);
+                if (device.location) {
+                    const { latitude, longitude } = device.location;
+                    console.log(`   Location: ${latitude}, ${longitude}`);
+                }
+                console.log();
+            });
+        } else {
+            console.log("No devices found\n");
+        }
+    } catch (error) {
+        console.error("Failed to fetch Find My data:", error);
+    } finally {
+        await sdk.close();
+    }
 }
 
 main().catch(console.error);
