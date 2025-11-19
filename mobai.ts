@@ -13,7 +13,7 @@ import {
     ScheduledMessageModule,
     ServerModule,
 } from "./modules";
-import type { ClientConfig } from "./types";
+import type { ClientConfig, SocketEventMap } from "./types";
 
 export class AdvancedIMessageKit extends EventEmitter {
     private static getGlobalSdk = (): AdvancedIMessageKit | null => (globalThis as any).__AdvancedIMessageKit__ ?? null;
@@ -87,8 +87,18 @@ export class AdvancedIMessageKit extends EventEmitter {
     /**
      * Generic request method to send data to the server and wait for a response.
      * Replaces HTTP requests with Socket.IO acknowledgements.
+     *
+     * For known events, the SocketEventMap type provides strong typing.
+     * For any custom/unknown events, a generic fallback overload is available.
      */
-    async request<T = any>(event: string, data?: any): Promise<T> {
+    async request<K extends keyof SocketEventMap>(
+        event: K,
+        data?: SocketEventMap[K]["req"],
+    ): Promise<SocketEventMap[K]["res"]>;
+
+    async request<T = any>(event: string, data?: any): Promise<T>;
+
+    async request(event: string, data?: any): Promise<any> {
         return new Promise((resolve, reject) => {
             if (!this.socket.connected) {
                 // Optional: Attempt to connect or wait? For now, fail fast if not connected is safer for strict consistency.

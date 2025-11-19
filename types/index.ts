@@ -6,3 +6,4 @@ export * from "./message";
 export * from "./server";
 export * from "./sticker";
 export * from "./tapback";
+export * from "./socketEvents";

@@ -7,7 +7,7 @@ export class ICloudModule {
         return this.sdk.request("get-findmy-friends");
     }
 
-    async refreshFindMyFriends(): Promise<void> {
+    async refreshFindMyFriends(): Promise<any[]> {
         return this.sdk.request("refresh-findmy-friends");
     }
 }

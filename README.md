@@ -654,6 +654,52 @@ const alerts = await sdk.server.getAlerts();
 await sdk.server.markAlertAsRead(["alert-id-1", "alert-id-2"]);
 ```
 
+## Capability Matrix (SDK ↔ Socket Events)
+
+The following table summarizes the main SDK methods and the underlying Socket.IO events they use.
+
+| Domain        | SDK method                                          | Socket event                     | Notes                               |
+|--------------|------------------------------------------------------|----------------------------------|-------------------------------------|
+| Messages      | `sdk.messages.sendMessage`                          | `send-message`                   | Text and simple message sends       |
+| Messages      | `sdk.messages.getMessage`                           | `get-message`                    | Single message with optional `with` |
+| Messages      | `sdk.messages.getMessages`                          | `get-messages`                   | Paginated message list              |
+| Messages      | `sdk.messages.sendReaction`                         | `send-reaction`                  | Tapback / reaction messages         |
+| Messages      | `sdk.messages.editMessage`                          | `edit-message`                   | Message editing (Ventura+)          |
+| Messages      | `sdk.messages.unsendMessage`                        | `unsend-message`                 | Message retraction (Ventura+)       |
+| Chats         | `sdk.chats.getChats`                                | `get-chats`                      | Chat list                           |
+| Chats         | `sdk.chats.getChat`                                 | `get-chat`                       | Single chat                         |
+| Chats         | `sdk.chats.getChatMessages`                         | `get-chat-messages`              | Messages for a chat                 |
+| Chats         | `sdk.chats.createChat`                              | `start-chat`                     | Create chat and optionally send     |
+| Chats         | `sdk.chats.updateChat`                              | `rename-group`                   | Rename group                        |
+| Chats         | `sdk.chats.addParticipant`                          | `add-participant`                | Add group member                    |
+| Chats         | `sdk.chats.removeParticipant`                       | `remove-participant`             | Remove group member                 |
+| Chats         | `sdk.chats.leaveChat`                               | `leave-chat`                     | Leave group                         |
+| Attachments   | `sdk.attachments.sendAttachment`                    | `send-message-chunk`             | Chunked file / audio / sticker send |
+| Attachments   | `sdk.attachments.getAttachment`                     | `get-attachment`                 | Attachment metadata                 |
+| Attachments   | `sdk.attachments.getAttachmentCount`                | `get-attachment-count`           | Total attachments                   |
+| Attachments   | `sdk.attachments.downloadAttachment`                | `get-attachment-chunk`           | Chunked download                    |
+| Attachments   | `sdk.attachments.downloadAttachmentLive`           | `get-live-attachment-chunk`      | Live Photo video component          |
+| Contacts      | `sdk.contacts.getContacts`                          | `get-contacts`                   | Contact list                        |
+| Contacts      | `sdk.contacts.getContactCard`                       | `get-icloud-contact-card`        | iCloud contact card                 |
+| Contacts      | `sdk.contacts.shareContactCard`                     | `share-contact-card`             | Share contact in chat               |
+| Handles       | `sdk.handles.getHandleCount`                        | `get-handle-count`               | Total handles                       |
+| Handles       | `sdk.handles.queryHandles`                          | `query-handles`                  | Handle query with metadata          |
+| Handles       | `sdk.handles.getHandle`                             | `get-handle`                     | Single handle                       |
+| Handles       | `sdk.handles.getHandleAvailability`                | `check-handle-availability`      | iMessage / FaceTime availability    |
+| Handles       | `sdk.handles.getHandleFocusStatus`                | `get-handle-focus-status`        | Focus mode status                   |
+| Find My       | `sdk.icloud.getFindMyFriends`                       | `get-findmy-friends`             | Find My Friends snapshot            |
+| Find My       | `sdk.icloud.refreshFindMyFriends`                   | `refresh-findmy-friends`         | Refresh and cache locations         |
+| FaceTime      | `sdk.facetime.createFaceTimeLink`                   | `start-facetime-session`         | Create FaceTime link                |
+| Scheduled     | `sdk.scheduledMessages.createScheduledMessage`      | `create-scheduled-message`       | Create scheduled message            |
+| Scheduled     | `sdk.scheduledMessages.getScheduledMessages`        | `get-scheduled-messages`         | List scheduled messages             |
+| Scheduled     | `sdk.scheduledMessages.updateScheduledMessage`      | `update-scheduled-message`       | Update scheduled message            |
+| Scheduled     | `sdk.scheduledMessages.deleteScheduledMessage`      | `delete-scheduled-message`       | Delete scheduled message            |
+| Server        | `sdk.server.getServerInfo`                          | `get-server-metadata`            | Basic server info                   |
+| Server        | `sdk.server.getMessageStats`                        | `get-database-totals`            | Message/database totals             |
+| Server        | `sdk.server.getServerLogs`                          | `get-logs`                       | Recent logs                         |
+| Server        | `sdk.server.getAlerts`                              | `get-alerts`                     | Alerts                              |
+| Server        | `sdk.server.markAlertAsRead`                        | `mark-alert-read`                | Mark alerts as read                 |
+
 ## Error Handling
 
 ```typescript
