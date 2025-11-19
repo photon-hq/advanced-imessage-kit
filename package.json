@@ -62,8 +62,7 @@
         "typescript": "^5.9.3"
     },
     "dependencies": {
-        "axios": "^1.13.2",
-        "form-data": "^4.0.4",
+        "byte-base64": "^1.1.0",
         "reflect-metadata": "^0.2.2",
         "socket.io-client": "^4.8.1"
     }

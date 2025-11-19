@@ -1,10 +1,9 @@
-import type { AxiosInstance } from "axios";
+import type { AdvancedIMessageKit } from "../mobai";
 
 export class FaceTimeModule {
-    constructor(private readonly http: AxiosInstance) {}
+    constructor(private readonly sdk: AdvancedIMessageKit) {}
 
     async createFaceTimeLink(): Promise<string> {
-        const response = await this.http.post("/api/v1/facetime/session");
-        return response.data.data;
+        return this.sdk.request("start-facetime-session");
     }
 }

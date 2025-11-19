@@ -1,52 +1,36 @@
-import type { AxiosInstance } from "axios";
+import type { AdvancedIMessageKit } from "../mobai";
 
 export class ServerModule {
-    constructor(private readonly http: AxiosInstance) {}
+    constructor(private readonly sdk: AdvancedIMessageKit) {}
 
     async getServerInfo(): Promise<any> {
-        const response = await this.http.get("/api/v1/server/info");
-        return response.data.data;
+        return this.sdk.request("get-server-metadata");
     }
 
     async getMessageStats(): Promise<any> {
-        const response = await this.http.get("/api/v1/server/statistics/totals");
-        return response.data.data;
+        // Use database totals (handles/messages/chats/attachments)
+        return this.sdk.request("get-database-totals");
     }
 
     async getServerLogs(count?: number): Promise<string[]> {
-        const response = await this.http.get("/api/v1/server/logs", {
-            params: count !== undefined ? { count } : {},
-        });
-        return response.data.data;
+        return this.sdk.request("get-logs", { count });
     }
 
     async getAlerts(): Promise<any[]> {
-        const response = await this.http.get("/api/v1/server/alert");
-        return response.data.data;
+        return this.sdk.request("get-alerts");
     }
 
     async markAlertAsRead(ids: string[]): Promise<any> {
-        const response = await this.http.post("/api/v1/server/alert/read", { ids });
-        return response.data.data;
+        return this.sdk.request("mark-alert-read", { ids });
     }
 
     async getMediaStatistics(options?: { only?: string[] }): Promise<any> {
-        const params: Record<string, any> = {};
-        if (options?.only) params.only = options.only.join(",");
-
-        const response = await this.http.get("/api/v1/server/statistics/media", {
-            params,
-        });
-        return response.data.data;
+        const payload = options?.only ? { only: options.only } : undefined;
+        return this.sdk.request("get-media-totals", payload);
     }
 
     async getMediaStatisticsByChat(options?: { only?: string[] }): Promise<any> {
-        const params: Record<string, any> = {};
-        if (options?.only) params.only = options.only.join(",");
-
-        const response = await this.http.get("/api/v1/server/statistics/media/chat", {
-            params,
-        });
-        return response.data.data;
+        const payload = options?.only ? { only: options.only } : undefined;
+        return this.sdk.request("get-media-totals-by-chat", payload);
     }
 }

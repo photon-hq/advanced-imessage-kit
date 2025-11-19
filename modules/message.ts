@@ -1,30 +1,28 @@
 import { randomUUID } from "node:crypto";
-import type { AxiosInstance } from "axios";
+import type { AdvancedIMessageKit } from "../mobai";
 import type { Message } from "../interfaces";
 import type { SendMessageOptions } from "../types";
 
 export class MessageModule {
-    constructor(private readonly http: AxiosInstance) {}
+    constructor(private readonly sdk: AdvancedIMessageKit) {}
 
     async sendMessage(options: SendMessageOptions): Promise<Message> {
         const payload = {
             ...options,
             tempGuid: options.tempGuid || randomUUID(),
         };
-        const response = await this.http.post("/api/v1/message/text", payload);
-        return response.data.data;
+        return this.sdk.request("send-message", payload);
     }
 
     async getMessage(guid: string, options?: { with?: string[] }): Promise<Message> {
-        const response = await this.http.get(`/api/v1/message/${guid}`, {
-            params: options?.with ? { with: options.with.join(",") } : {},
+        return this.sdk.request("get-message", {
+            guid,
+            ...options
         });
-        return response.data.data;
     }
 
     async getMessages(options: any): Promise<Message[]> {
-        const response = await this.http.post("/api/v1/message/query", options);
-        return response.data.data;
+        return this.sdk.request("get-messages", options);
     }
 
     async getMessageCount(options?: {
@@ -34,15 +32,8 @@ export class MessageModule {
         minRowId?: number;
         maxRowId?: number;
     }): Promise<number> {
-        const params: Record<string, any> = {};
-        if (options?.after !== undefined) params.after = options.after;
-        if (options?.before !== undefined) params.before = options.before;
-        if (options?.chatGuid) params.chatGuid = options.chatGuid;
-        if (options?.minRowId !== undefined) params.minRowId = options.minRowId;
-        if (options?.maxRowId !== undefined) params.maxRowId = options.maxRowId;
-
-        const response = await this.http.get("/api/v1/message/count", { params });
-        return response.data.data.total;
+        const res = await this.sdk.request("get-message-count", options);
+        return res.total;
     }
 
     async getUpdatedMessageCount(options?: {
@@ -52,17 +43,8 @@ export class MessageModule {
         minRowId?: number;
         maxRowId?: number;
     }): Promise<number> {
-        const params: Record<string, any> = {};
-        if (options?.after !== undefined) params.after = options.after;
-        if (options?.before !== undefined) params.before = options.before;
-        if (options?.chatGuid) params.chatGuid = options.chatGuid;
-        if (options?.minRowId !== undefined) params.minRowId = options.minRowId;
-        if (options?.maxRowId !== undefined) params.maxRowId = options.maxRowId;
-
-        const response = await this.http.get("/api/v1/message/count/updated", {
-            params,
-        });
-        return response.data.data.total;
+        const res = await this.sdk.request("get-updated-message-count", options);
+        return res.total;
     }
 
     async getSentMessageCount(options?: {
@@ -72,17 +54,8 @@ export class MessageModule {
         minRowId?: number;
         maxRowId?: number;
     }): Promise<number> {
-        const params: Record<string, any> = {};
-        if (options?.after !== undefined) params.after = options.after;
-        if (options?.before !== undefined) params.before = options.before;
-        if (options?.chatGuid) params.chatGuid = options.chatGuid;
-        if (options?.minRowId !== undefined) params.minRowId = options.minRowId;
-        if (options?.maxRowId !== undefined) params.maxRowId = options.maxRowId;
-
-        const response = await this.http.get("/api/v1/message/count/me", {
-            params,
-        });
-        return response.data.data.total;
+        const res = await this.sdk.request("get-sent-message-count", options);
+        return res.total;
     }
 
     async editMessage(options: {
@@ -91,12 +64,12 @@ export class MessageModule {
         backwardsCompatibilityMessage?: string;
         partIndex?: number;
     }): Promise<Message> {
-        const response = await this.http.post(`/api/v1/message/${options.messageGuid}/edit`, {
+        return this.sdk.request("edit-message", {
+            messageGuid: options.messageGuid,
             editedMessage: options.editedMessage,
             backwardsCompatibilityMessage: options.backwardsCompatibilityMessage || options.editedMessage,
             partIndex: options.partIndex ?? 0,
         });
-        return response.data.data;
     }
 
     async sendReaction(options: {
@@ -105,28 +78,46 @@ export class MessageModule {
         reaction: string;
         partIndex?: number;
     }): Promise<Message> {
-        const response = await this.http.post("/api/v1/message/react", {
+        const tempGuid = randomUUID();
+        return this.sdk.request("send-reaction", {
             chatGuid: options.chatGuid,
-            selectedMessageGuid: options.messageGuid,
-            reaction: options.reaction,
+            tempGuid,
+            messageGuid: options.messageGuid,
+            messageText: options.reaction,
+            actionMessageGuid: options.messageGuid,
+            actionMessageText: options.reaction,
+            tapback: options.reaction,
             partIndex: options.partIndex ?? 0,
         });
-        return response.data.data;
     }
 
     async unsendMessage(options: { messageGuid: string; partIndex?: number }): Promise<Message> {
-        const response = await this.http.post(`/api/v1/message/${options.messageGuid}/unsend`, {
+        return this.sdk.request("unsend-message", {
+            messageGuid: options.messageGuid,
             partIndex: options.partIndex ?? 0,
         });
-        return response.data.data;
     }
 
     async notifyMessage(guid: string): Promise<void> {
-        await this.http.post(`/api/v1/message/${guid}/notify`);
+        // Socket route requires both chatGuid and messageGuid, so resolve chatGuid from the message first.
+        const msg = await this.getMessage(guid);
+        if (msg && msg.chats && msg.chats.length > 0 && msg.chats[0]) {
+             await this.sdk.request("notify-message", {
+                chatGuid: msg.chats[0].guid,
+                messageGuid: guid
+            });
+        }
     }
 
     async getEmbeddedMedia(guid: string): Promise<any> {
-        const response = await this.http.get(`/api/v1/message/${guid}/embedded-media`);
-        return response.data.data;
+        // Same issue as notifyMessage, socket route needs chatGuid
+        const msg = await this.getMessage(guid);
+        if (msg && msg.chats && msg.chats.length > 0 && msg.chats[0]) {
+            return this.sdk.request("get-embedded-media", {
+                chatGuid: msg.chats[0].guid,
+                messageGuid: guid
+            });
+        }
+        return null;
     }
 }

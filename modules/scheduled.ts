@@ -1,24 +1,21 @@
-import type { AxiosInstance } from "axios";
+import type { AdvancedIMessageKit } from "../mobai";
 
 export class ScheduledMessageModule {
-    constructor(private readonly http: AxiosInstance) {}
+    constructor(private readonly sdk: AdvancedIMessageKit) {}
 
     async createScheduledMessage(options: any): Promise<any> {
-        const response = await this.http.post("/api/v1/message/schedule", options);
-        return response.data.data;
+        return this.sdk.request("create-scheduled-message", options);
     }
 
     async getScheduledMessages(): Promise<any[]> {
-        const response = await this.http.get("/api/v1/message/schedule");
-        return response.data.data;
+        return this.sdk.request("get-scheduled-messages");
     }
 
     async updateScheduledMessage(id: string, options: any): Promise<any> {
-        const response = await this.http.put(`/api/v1/message/schedule/${id}`, options);
-        return response.data.data;
+        return this.sdk.request("update-scheduled-message", { id, ...options });
     }
 
     async deleteScheduledMessage(id: string): Promise<void> {
-        await this.http.delete(`/api/v1/message/schedule/${id}`);
+        return this.sdk.request("delete-scheduled-message", { id });
     }
 }

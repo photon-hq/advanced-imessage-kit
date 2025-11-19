@@ -1,15 +1,13 @@
 import { readFile } from "node:fs/promises";
-import path from "node:path";
-import type { AxiosInstance } from "axios";
-import FormData from "form-data";
+import type { AdvancedIMessageKit } from "../mobai";
 import type { Chat, Message } from "../interfaces";
+import * as base64 from "byte-base64";
 
 export class ChatModule {
-    constructor(private readonly http: AxiosInstance) {}
+    constructor(private readonly sdk: AdvancedIMessageKit) {}
 
     async getChats(): Promise<Chat[]> {
-        const response = await this.http.post("/api/v1/chat/query", {});
-        return response.data.data;
+        return this.sdk.request("get-chats");
     }
 
     async createChat(options: {
@@ -22,50 +20,60 @@ export class ChatModule {
         effectId?: string;
         attributedBody?: Record<string, unknown>;
     }): Promise<Chat> {
-        const response = await this.http.post("/api/v1/chat/new", options);
-        return response.data.data;
+        return this.sdk.request("start-chat", {
+            participants: options.addresses,
+            message: options.message,
+            service: options.service,
+            tempGuid: options.tempGuid
+        });
     }
 
     async getChat(guid: string, options?: { with?: string[] }): Promise<Chat> {
-        const response = await this.http.get(`/api/v1/chat/${guid}`, {
-            params: options?.with ? { with: options.with.join(",") } : {},
+        return this.sdk.request("get-chat", {
+            chatGuid: guid,
+            ...options
         });
-        return response.data.data;
     }
 
     async updateChat(guid: string, options: { displayName?: string }): Promise<Chat> {
-        const response = await this.http.put(`/api/v1/chat/${guid}`, options);
-        return response.data.data;
+        // Only displayName rename is supported via the rename-group socket route.
+        if (options.displayName) {
+             return this.sdk.request("rename-group", {
+                identifier: guid,
+                newName: options.displayName
+            });
+        }
+        throw new Error("Only displayName update supported via socket currently");
     }
 
     async deleteChat(guid: string): Promise<void> {
-        await this.http.delete(`/api/v1/chat/${guid}`);
+        return this.sdk.request("delete-chat", { chatGuid: guid });
     }
 
     async markChatRead(guid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${guid}/read`);
+        return this.sdk.request("mark-chat-read", { chatGuid: guid });
     }
 
     async markChatUnread(guid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${guid}/unread`);
+        return this.sdk.request("mark-chat-unread", { chatGuid: guid });
     }
 
     async leaveChat(guid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${guid}/leave`);
+        return this.sdk.request("leave-chat", { chatGuid: guid });
     }
 
     async addParticipant(chatGuid: string, address: string): Promise<Chat> {
-        const response = await this.http.post(`/api/v1/chat/${chatGuid}/participant`, {
-            address,
+        return this.sdk.request("add-participant", {
+            identifier: chatGuid,
+            address
         });
-        return response.data.data;
     }
 
     async removeParticipant(chatGuid: string, address: string): Promise<Chat> {
-        const response = await this.http.delete(`/api/v1/chat/${chatGuid}/participant`, {
-            data: { address },
+        return this.sdk.request("remove-participant", {
+            identifier: chatGuid,
+            address
         });
-        return response.data.data;
     }
 
     async getChatMessages(
@@ -79,57 +87,43 @@ export class ChatModule {
             with?: string[];
         },
     ): Promise<Message[]> {
-        const params: Record<string, any> = {};
-        if (options?.offset !== undefined) params.offset = options.offset;
-        if (options?.limit !== undefined) params.limit = options.limit;
-        if (options?.sort) params.sort = options.sort;
-        if (options?.before !== undefined) params.before = options.before;
-        if (options?.after !== undefined) params.after = options.after;
-        if (options?.with) params.with = options.with.join(",");
-
-        const response = await this.http.get(`/api/v1/chat/${chatGuid}/message`, {
-            params,
+        return this.sdk.request("get-chat-messages", {
+            identifier: chatGuid,
+            ...options
         });
-        return response.data.data;
     }
 
     async setGroupIcon(chatGuid: string, filePath: string): Promise<void> {
         const fileBuffer = await readFile(filePath);
-        const fileName = path.basename(filePath);
-        const form = new FormData();
-        form.append("icon", fileBuffer, fileName);
-
-        await this.http.post(`/api/v1/chat/${chatGuid}/icon`, form, {
-            headers: form.getHeaders(),
+        // Send base64-encoded icon data to the set-group-icon socket route.
+        return this.sdk.request("set-group-icon", {
+            chatGuid,
+            iconData: base64.bytesToBase64(fileBuffer)
         });
     }
 
     async removeGroupIcon(chatGuid: string): Promise<void> {
-        await this.http.delete(`/api/v1/chat/${chatGuid}/icon`);
+        return this.sdk.request("remove-group-icon", { chatGuid });
     }
 
     async getGroupIcon(chatGuid: string): Promise<Buffer> {
-        const response = await this.http.get(`/api/v1/chat/${chatGuid}/icon`, {
-            responseType: "arraybuffer",
-        });
-        return Buffer.from(response.data);
+        const res = await this.sdk.request("get-group-icon", { chatGuid });
+        // res should be base64 string
+        return Buffer.from(res, 'base64');
     }
 
     async getChatCount(options?: { includeArchived?: boolean }): Promise<{
         total: number;
         breakdown: Record<string, number>;
     }> {
-        const response = await this.http.get("/api/v1/chat/count", {
-            params: options?.includeArchived !== undefined ? { includeArchived: options.includeArchived } : {},
-        });
-        return response.data.data;
+        return this.sdk.request("get-chat-count", options);
     }
 
     async startTyping(chatGuid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${chatGuid}/typing`);
+        return this.sdk.request("started-typing", { chatGuid });
     }
 
     async stopTyping(chatGuid: string): Promise<void> {
-        await this.http.delete(`/api/v1/chat/${chatGuid}/typing`);
+        return this.sdk.request("stopped-typing", { chatGuid });
     }
 }

@@ -1,5 +1,4 @@
 import { EventEmitter } from "node:events";
-import axios, { type AxiosInstance } from "axios";
 import io from "socket.io-client";
 import { getLogger, setGlobalLogLevel } from "./lib/Loggable";
 import type { LogLevel } from "./lib/Logger";
@@ -34,7 +33,6 @@ export class AdvancedIMessageKit extends EventEmitter {
     // Core
     public readonly config: ClientConfig;
     public readonly logger = getLogger("AdvancedIMessageKit");
-    public readonly http: AxiosInstance;
     public readonly socket: ReturnType<typeof io>;
 
     public readonly attachments: AttachmentModule;
@@ -51,10 +49,6 @@ export class AdvancedIMessageKit extends EventEmitter {
     public readonly server: ServerModule;
 
     // Message deduplication feature
-    //
-    // Purpose: Prevent message reply loops caused by server repeatedly pushing
-    // the same message content with different GUIDs due to unstable Socket.IO connections.
-    // This is especially problematic when the polling transport causes connection issues.
     private processedMessages = new Set<string>();
 
     private constructor(config: ClientConfig = {}) {
@@ -70,41 +64,49 @@ export class AdvancedIMessageKit extends EventEmitter {
             setGlobalLogLevel(this.config.logLevel as LogLevel);
         }
 
-        this.http = axios.create({
-            baseURL: this.config.serverUrl,
-        });
-
         this.socket = io(this.config.serverUrl, {
-            // 🚨 IMPORTANT: Polling transport configuration notes
-            //
-            // Root cause analysis:
-            // 1. Socket.IO 'polling' transport can cause unstable connections in certain network environments
-            // 2. When "xhr poll error" occurs, Socket.IO attempts to reconnect
-            // 3. During reconnection, the server may repeatedly push the same message with different GUIDs
-            // 4. This is not simple client-side duplicate processing, but server-side message duplication
-            //
-            // Solutions:
-            // - Prioritize WebSocket transport, fallback to polling as backup
-            // - Set reasonable timeout to avoid frequent reconnections
-            // - Use forceNew to ensure fresh connections and avoid state pollution
-            // - Implement client-side message deduplication as the last line of defense
             transports: ["websocket"], // Only WebSocket - polling disabled to prevent message duplication
             timeout: 10000, // 10 second timeout to avoid overly frequent reconnections
             forceNew: true, // Force new connection to avoid connection state pollution
         });
 
-        this.attachments = new AttachmentModule(this.http);
-        this.messages = new MessageModule(this.http);
-        this.chats = new ChatModule(this.http);
+        this.attachments = new AttachmentModule(this);
+        this.messages = new MessageModule(this);
+        this.chats = new ChatModule(this);
 
-        this.contacts = new ContactModule(this.http);
-        this.handles = new HandleModule(this.http);
+        this.contacts = new ContactModule(this);
+        this.handles = new HandleModule(this);
 
-        this.facetime = new FaceTimeModule(this.http);
-        this.icloud = new ICloudModule(this.http);
+        this.facetime = new FaceTimeModule(this);
+        this.icloud = new ICloudModule(this);
 
-        this.scheduledMessages = new ScheduledMessageModule(this.http);
-        this.server = new ServerModule(this.http);
+        this.scheduledMessages = new ScheduledMessageModule(this);
+        this.server = new ServerModule(this);
+    }
+
+    /**
+     * Generic request method to send data to the server and wait for a response.
+     * Replaces HTTP requests with Socket.IO acknowledgements.
+     */
+    async request<T = any>(event: string, data?: any): Promise<T> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket.connected) {
+                // Optional: Attempt to connect or wait? For now, fail fast if not connected is safer for strict consistency.
+                // Or we could wait for 'connect' event.
+                // reject(new Error("Socket not connected"));
+                // Let's allow it to queue internally by socket.io if possible, but socket.io usually buffers.
+            }
+
+            this.socket.emit(event, data, (response: any) => {
+                // Standardize response handling based on the server's ResponseJson structure
+                if (response?.status === 200) {
+                    resolve(response.data);
+                } else {
+                    const errorMsg = response?.error?.message || response?.message || "Unknown server error";
+                    reject(new Error(errorMsg));
+                }
+            });
+        });
     }
 
     async connect() {
@@ -126,13 +128,6 @@ export class AdvancedIMessageKit extends EventEmitter {
 
         for (const eventName of serverEvents) {
             this.socket.on(eventName, (...args: any[]) => {
-                // Message deduplication logic
-                //
-                // Problem: When Socket.IO connection is unstable (especially with polling transport),
-                // the server may repeatedly push the same message content with different GUIDs.
-                // This bypasses traditional GUID-based deduplication and causes message reply loops.
-                //
-                // Solution: Use GUID as unique identifier for deduplication
                 if (eventName === "new-message" && args.length > 0) {
                     const message = args[0];
                     if (message?.guid) {

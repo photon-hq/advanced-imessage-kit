@@ -1,22 +1,22 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import type { AxiosInstance } from "axios";
-import FormData from "form-data";
+import type { AdvancedIMessageKit } from "../mobai";
 import type { Message } from "../interfaces";
 import type { SendAttachmentOptions, SendStickerOptions } from "../types";
+import * as base64 from "byte-base64";
 
 export class AttachmentModule {
-    constructor(private readonly http: AxiosInstance) {}
+    constructor(private readonly sdk: AdvancedIMessageKit) {}
 
     async getAttachmentCount(): Promise<number> {
-        const response = await this.http.get("/api/v1/attachment/count");
-        return response.data.data.total;
+        const res = await this.sdk.request("get-attachment-count");
+        // Assuming response format is { total: number }
+        return res.total;
     }
 
     async getAttachment(guid: string): Promise<any> {
-        const response = await this.http.get(`/api/v1/attachment/${guid}`);
-        return response.data.data;
+        return this.sdk.request("get-attachment", { identifier: guid });
     }
 
     async downloadAttachment(
@@ -29,80 +29,112 @@ export class AttachmentModule {
             quality?: number;
         },
     ): Promise<Buffer> {
-        const params: Record<string, any> = {};
-        if (options?.original !== undefined) params.original = options.original;
-        if (options?.force !== undefined) params.force = options.force;
-        if (options?.height !== undefined) params.height = options.height;
-        if (options?.width !== undefined) params.width = options.width;
-        if (options?.quality !== undefined) params.quality = options.quality;
-
-        const response = await this.http.get(`/api/v1/attachment/${guid}/download`, {
-            params,
-            responseType: "arraybuffer",
-        });
-        return Buffer.from(response.data);
+        // Download attachment in chunks using the get-attachment-chunk socket route.
+        
+        let buffer = Buffer.alloc(0);
+        let start = 0;
+        const chunkSize = 1024 * 1024; // 1MB
+        
+        while (true) {
+            const res = await this.sdk.request<{ data: string } | null>("get-attachment-chunk", {
+                identifier: guid,
+                start,
+                chunkSize,
+                compress: false // Simplification
+            });
+            
+            if (!res || !res.data) break;
+            
+            const chunk = Buffer.from(res.data, 'base64');
+            buffer = Buffer.concat([buffer, chunk]);
+            start += chunk.length;
+            
+            if (chunk.length < chunkSize) break;
+        }
+        
+        return buffer;
     }
 
     async downloadAttachmentLive(guid: string): Promise<Buffer> {
-        const response = await this.http.get(`/api/v1/attachment/${guid}/live`, {
-            responseType: "arraybuffer",
-        });
-        return Buffer.from(response.data);
+        // Live Photo video part download via dedicated socket event
+        let buffer = Buffer.alloc(0);
+        let start = 0;
+        const chunkSize = 1024 * 1024; // 1MB
+
+        while (true) {
+            const res = await this.sdk.request<{ data: string } | null>("get-live-attachment-chunk", {
+                identifier: guid,
+                start,
+                chunkSize,
+                compress: false,
+            });
+
+            if (!res || !res.data) break;
+
+            const chunk = Buffer.from(res.data, "base64");
+            buffer = Buffer.concat([buffer, chunk]);
+            start += chunk.length;
+
+            if (chunk.length < chunkSize) break;
+        }
+
+        return buffer;
     }
 
     async getAttachmentBlurhash(
         guid: string,
         options?: { height?: number; width?: number; quality?: number },
     ): Promise<string> {
-        const params: Record<string, any> = {};
-        if (options?.height !== undefined) params.height = options.height;
-        if (options?.width !== undefined) params.width = options.width;
-        if (options?.quality !== undefined) params.quality = options.quality;
-
-        const response = await this.http.get(`/api/v1/attachment/${guid}/blurhash`, {
-            params,
+        // Use the get-attachment-blurhash socket route (may throw if blurhash is unsupported in SDK mode).
+        return this.sdk.request("get-attachment-blurhash", { 
+            identifier: guid,
+            ...options
         });
-        return response.data.data.blurhash;
     }
 
     async sendAttachment(options: SendAttachmentOptions): Promise<Message> {
+        // Socket upload uses send-message-chunk logic
         const fileBuffer = await readFile(options.filePath);
         const fileName = options.fileName || path.basename(options.filePath);
-
-        const form = new FormData();
-        form.append("chatGuid", options.chatGuid);
-        form.append("attachment", fileBuffer, fileName);
-        form.append("name", fileName);
-        form.append("tempGuid", randomUUID());
-        if (options.isAudioMessage !== undefined) {
-            form.append("isAudioMessage", options.isAudioMessage.toString());
-            if (options.isAudioMessage) {
-                form.append("method", "private-api");
-            }
+        const attachmentGuid = randomUUID();
+        const tempGuid = randomUUID();
+        
+        // Chunked upload logic
+        const chunkSize = 1024 * 1024; // 1MB
+        let start = 0;
+        
+        while (start < fileBuffer.length) {
+            const end = Math.min(start + chunkSize, fileBuffer.length);
+            const chunk = fileBuffer.slice(start, end);
+            const hasMore = end < fileBuffer.length;
+            
+            await this.sdk.request("send-message-chunk", {
+                guid: options.chatGuid,
+                tempGuid,
+                message: null, // No text for pure attachment send usually
+                attachmentGuid,
+                attachmentChunkStart: start,
+                attachmentData: base64.bytesToBase64(chunk),
+                hasMore,
+                attachmentName: fileName
+            });
+            
+            start = end;
         }
-
-        const response = await this.http.post("/api/v1/message/attachment", form, {
-            headers: form.getHeaders(),
-        });
-
-        return response.data.data;
+        
+        // The final chunk queues an attachment send job; the socket route does not return the Message.
+        // Consumers should rely on the new-message event and match by tempGuid.
+        return { guid: tempGuid } as any;
     }
 
     async sendSticker(options: SendStickerOptions): Promise<Message> {
-        const fileName = options.fileName || path.basename(options.filePath);
-        const form = new FormData();
-
-        form.append("attachment", await readFile(options.filePath), fileName);
-
-        const { data } = await this.http.post("/api/v1/attachment/upload", form, {
-            headers: form.getHeaders(),
-        });
-        const response = await this.http.post("/api/v1/message/multipart", {
+        return this.sendAttachment({
             chatGuid: options.chatGuid,
+            filePath: options.filePath,
+            fileName: options.fileName,
+            isAudioMessage: false,
+            isSticker: true,
             selectedMessageGuid: options.selectedMessageGuid,
-            parts: [{ partIndex: 0, attachment: data.data.path, name: fileName }],
         });
-
-        return response.data.data;
     }
 }

@@ -1,23 +1,21 @@
-import type { AxiosInstance } from "axios";
+import type { AdvancedIMessageKit } from "../mobai";
 
 export class ICloudModule {
-    constructor(private readonly http: AxiosInstance) {}
+    constructor(private readonly sdk: AdvancedIMessageKit) {}
 
     async getFindMyFriends(): Promise<any[]> {
-        const response = await this.http.get("/api/v1/icloud/findmy/friends");
-        return response.data.data;
+        return this.sdk.request("get-findmy-friends");
     }
 
     async getFindMyDevices(): Promise<any[]> {
-        const response = await this.http.get("/api/v1/icloud/findmy/devices");
-        return response.data.data;
+        return this.sdk.request("get-findmy-devices");
     }
 
     async refreshFindMyFriends(): Promise<void> {
-        await this.http.post("/api/v1/icloud/findmy/friends/refresh");
+        return this.sdk.request("refresh-findmy-friends");
     }
 
     async refreshFindMyDevices(): Promise<void> {
-        await this.http.post("/api/v1/icloud/findmy/devices/refresh");
+        return this.sdk.request("refresh-findmy-devices");
     }
 }

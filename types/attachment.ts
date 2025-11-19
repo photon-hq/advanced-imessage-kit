@@ -3,6 +3,8 @@ export interface SendAttachmentOptions {
     filePath: string;
     fileName?: string;
     isAudioMessage?: boolean;
+    isSticker?: boolean;
+    selectedMessageGuid?: string;
 }
 
 export interface Attachment {
