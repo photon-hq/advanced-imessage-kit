@@ -64,10 +64,14 @@ export class AdvancedIMessageKit extends EventEmitter {
             setGlobalLogLevel(this.config.logLevel as LogLevel);
         }
 
+        const auth: Record<string, string> = {};
+        if (this.config.apiKey) auth.apiKey = this.config.apiKey;
+
         this.socket = io(this.config.serverUrl, {
             transports: ["websocket"], // Only WebSocket - polling disabled to prevent message duplication
             timeout: 10000, // 10 second timeout to avoid overly frequent reconnections
             forceNew: true, // Force new connection to avoid connection state pollution
+            auth: Object.keys(auth).length ? auth : undefined,
         });
 
         this.attachments = new AttachmentModule(this);

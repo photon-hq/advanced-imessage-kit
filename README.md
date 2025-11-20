@@ -723,8 +723,21 @@ try {
 interface ClientConfig {
   serverUrl?: string; // Your subdomain: '{your-subdomain}.imsgd.photon.codes'
   logLevel?: "debug" | "info" | "warn" | "error"; // Default: 'info'
+  apiKey?: string; // Required when the server is protected by nexus auth
 }
 ```
+
+### Using `apiKey` with nexus auth
+
+If your Advanced iMessage Kit server is protected by a **nexus** control plane (i.e. the server is configured with
+`NEXUS_BASE_URL` and validates connections via `POST /auth/validate`), then:
+
+- Every Socket.IO connection **must** include an `apiKey` in `ClientConfig`.
+- Internally, the server will reject connections without a valid `apiKey` and emit an `auth-error` event
+  (for example, `missing-api-key`, `nexus-invalid-or-revoked`, or `nexus-auth-failed`).
+
+In non-nexus setups (no `NEXUS_BASE_URL` configured), `apiKey` can be omitted and the server will use its
+original authentication/encryption mechanisms instead.
 
 ## Best Practices
 
