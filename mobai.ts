@@ -99,7 +99,13 @@ export class AdvancedIMessageKit extends EventEmitter {
     async request<T = any>(event: string, data?: any): Promise<T>;
 
     async request(event: string, data?: any): Promise<any> {
+        const timeoutMs = 120000; // 2 minute safety timeout to avoid hanging indefinitely
+
         return new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+                reject(new Error(`Request to event "${event}" timed out after ${timeoutMs}ms`));
+            }, timeoutMs);
+
             if (!this.socket.connected) {
                 // Optional: Attempt to connect or wait? For now, fail fast if not connected is safer for strict consistency.
                 // Or we could wait for 'connect' event.
@@ -108,6 +114,8 @@ export class AdvancedIMessageKit extends EventEmitter {
             }
 
             this.socket.emit(event, data, (response: any) => {
+                clearTimeout(timeoutId);
+
                 // Standardize response handling based on the server's ResponseJson structure
                 if (response?.status === 200) {
                     resolve(response.data);
