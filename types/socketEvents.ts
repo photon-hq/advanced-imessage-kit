@@ -2,6 +2,7 @@ import type { Chat } from "./chat";
 import type { Message } from "./message";
 import type { Attachment } from "./attachment";
 import type { ServerMetadataResponse } from "./server";
+import type { ScheduledMessage, ScheduledMessagePayload, ScheduledMessageSchedule, ScheduledMessageType } from "./scheduled";
 
 // Central mapping of Socket.IO events used by the SDK to their
 // request and response payload types. This is intentionally
@@ -20,42 +21,168 @@ export interface SocketEventMap {
     // Chats
     "get-chats": { req: void; res: Chat[] };
     "get-chat": { req: { chatGuid: string; with?: string[] }; res: Chat };
-    "get-chat-messages": { req: any; res: Message[] };
-    "start-chat": { req: any; res: Chat };
-    "rename-group": { req: any; res: Chat };
+    "get-chat-messages": {
+        req: {
+            identifier: string;
+            offset?: number;
+            limit?: number;
+            after?: number | Date;
+            before?: number | Date;
+            withChats?: boolean;
+            withChatParticipants?: boolean;
+            withAttachments?: boolean;
+            sort?: "ASC" | "DESC";
+            where?: unknown;
+        };
+        res: Message[];
+    };
+    "start-chat": {
+        req: {
+            participants: string | string[];
+            message?: string;
+            service?: string;
+            tempGuid?: string;
+        };
+        res: Chat;
+    };
+    "rename-group": { req: { identifier: string; newName: string }; res: Chat };
     "delete-chat": { req: { chatGuid: string }; res: void };
     "mark-chat-read": { req: { chatGuid: string }; res: void };
     "mark-chat-unread": { req: { chatGuid: string }; res: void };
     "leave-chat": { req: { chatGuid: string }; res: void };
-    "add-participant": { req: any; res: Chat };
-    "remove-participant": { req: any; res: Chat };
+    "add-participant": { req: { identifier: string; address: string }; res: Chat };
+    "remove-participant": { req: { identifier: string; address: string }; res: Chat };
     "get-chat-count": { req: { includeArchived?: boolean } | undefined; res: { total: number; breakdown: Record<string, number> } };
-    "set-group-icon": { req: any; res: void };
+    "set-group-icon": { req: { chatGuid: string; iconData: string }; res: void };
     "remove-group-icon": { req: { chatGuid: string }; res: void };
     "get-group-icon": { req: { chatGuid: string }; res: string };
     "started-typing": { req: { chatGuid: string }; res: void };
     "stopped-typing": { req: { chatGuid: string }; res: void };
 
     // Messages
-    "send-message": { req: any; res: Message };
+    "send-message": {
+        req: {
+            guid: string;
+            message?: string;
+            tempGuid?: string | number;
+            attachment?: string;
+            attachmentName?: string;
+            attachmentGuid?: string;
+        };
+        res: Message;
+    };
     "get-message": { req: { guid: string; with?: string[] }; res: Message };
-    "get-messages": { req: any; res: Message[] };
-    "get-message-count": { req: any; res: { total: number } };
-    "get-updated-message-count": { req: any; res: { total: number } };
-    "get-sent-message-count": { req: any; res: { total: number } };
-    "edit-message": { req: any; res: Message };
-    "send-reaction": { req: any; res: Message };
-    "unsend-message": { req: any; res: Message };
-    "notify-message": { req: any; res: any };
-    "get-embedded-media": { req: any; res: any };
+    "get-messages": {
+        req: {
+            chatGuid?: string;
+            offset?: number;
+            limit?: number;
+            after?: number | Date;
+            before?: number | Date;
+            withChats?: boolean;
+            withChatParticipants?: boolean;
+            withAttachments?: boolean;
+            sort?: "ASC" | "DESC";
+            where?: unknown;
+        };
+        res: Message[];
+    };
+    "get-message-count": {
+        req: {
+            chatGuid?: string;
+            after?: number | Date;
+            before?: number | Date;
+            includeCreated?: boolean;
+        } | undefined;
+        res: { total: number };
+    };
+    "get-updated-message-count": {
+        req: {
+            chatGuid?: string;
+            after?: number | Date;
+            before?: number | Date;
+        } | undefined;
+        res: { total: number };
+    };
+    "get-sent-message-count": {
+        req: {
+            chatGuid?: string;
+            after?: number | Date;
+            before?: number | Date;
+        } | undefined;
+        res: { total: number };
+    };
+    "edit-message": {
+        req: {
+            chatGuid: string;
+            messageGuid: string;
+            editedMessage: string;
+            backwardsCompatMessage: string;
+            partIndex: number;
+        };
+        res: Message;
+    };
+    "send-reaction": {
+        req: {
+            chatGuid: string;
+            tempGuid?: string | null;
+            messageGuid: string;
+            tapback?: string;
+            messageText?: string;
+            actionMessageGuid?: string;
+            actionMessageText?: string;
+            partIndex?: number;
+        };
+        res: Message;
+    };
+    "unsend-message": {
+        req: {
+            chatGuid: string;
+            messageGuid: string;
+            partIndex: number;
+        };
+        res: Message;
+    };
+    "notify-message": {
+        req: { chatGuid: string; messageGuid: string };
+        res: Message;
+    };
+    "get-embedded-media": {
+        req: { chatGuid: string; messageGuid: string };
+        res: string | null;
+    };
 
     // Attachments
     "get-attachment-count": { req: void; res: { total: number } };
     "get-attachment": { req: { identifier: string }; res: Attachment | any };
-    "get-attachment-blurhash": { req: any; res: string };
-    "get-attachment-chunk": { req: any; res: { data: string } | null };
-    "get-live-attachment-chunk": { req: any; res: { data: string } | null };
-    "send-message-chunk": { req: any; res: any };
+    "get-attachment-blurhash": {
+        req: { identifier: string; width?: number; height?: number; quality?: number | string };
+        res: string;
+    };
+    "get-attachment-chunk": {
+        req: { identifier: string; start?: number; chunkSize?: number; compress?: boolean };
+        res: { data: string } | null;
+    };
+    "get-live-attachment-chunk": {
+        req: { identifier: string; start?: number; chunkSize?: number; compress?: boolean };
+        res: { data: string } | null;
+    };
+    "send-message-chunk": {
+        req: {
+            guid: string;
+            tempGuid: string;
+            message?: string | null;
+            attachmentGuid?: string;
+            attachmentChunkStart?: number;
+            attachmentData?: string;
+            hasMore?: boolean;
+            attachmentName?: string;
+            isSticker?: boolean;
+            isAudioMessage?: boolean;
+            selectedMessageGuid?: string;
+        };
+        res: any;
+    };
 
     // Contacts / iCloud
     "get-contacts": { req: void | { query?: string; extraProperties?: string[] }; res: any[] };
@@ -78,8 +205,25 @@ export interface SocketEventMap {
     "start-facetime-session": { req: void; res: string };
 
     // Scheduled messages
-    "create-scheduled-message": { req: any; res: any };
-    "get-scheduled-messages": { req: void; res: any[] };
-    "update-scheduled-message": { req: any; res: any };
+    "create-scheduled-message": {
+        req: {
+            type: ScheduledMessageType;
+            payload: ScheduledMessagePayload;
+            scheduledFor: Date | string | number;
+            schedule: ScheduledMessageSchedule;
+        };
+        res: ScheduledMessage;
+    };
+    "get-scheduled-messages": { req: void; res: ScheduledMessage[] };
+    "update-scheduled-message": {
+        req: {
+            id: number | string;
+            type: ScheduledMessageType;
+            payload: ScheduledMessagePayload;
+            scheduledFor: Date | string | number;
+            schedule: ScheduledMessageSchedule;
+        };
+        res: ScheduledMessage;
+    };
     "delete-scheduled-message": { req: { id: string | number }; res: void };
 }

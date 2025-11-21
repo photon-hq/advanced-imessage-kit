@@ -1,21 +1,62 @@
 import type { AdvancedIMessageKit } from "../mobai";
+import type {
+    CreateScheduledMessageOptions,
+    ScheduledMessage,
+    SocketEventMap,
+    UpdateScheduledMessageOptions,
+} from "../types";
 
 export class ScheduledMessageModule {
     constructor(private readonly sdk: AdvancedIMessageKit) {}
 
-    async createScheduledMessage(options: any): Promise<any> {
-        return this.sdk.request("create-scheduled-message", options);
+    async createScheduledMessage(options: CreateScheduledMessageOptions): Promise<ScheduledMessage> {
+        const payload: SocketEventMap["create-scheduled-message"]["req"] = {
+            type: "send-message",
+            payload: {
+                chatGuid: options.chatGuid,
+                message: options.message,
+                tempGuid: options.tempGuid,
+                subject: options.subject,
+                effectId: options.effectId,
+                selectedMessageGuid: options.selectedMessageGuid,
+                partIndex: options.partIndex,
+                ddScan: options.ddScan,
+                method: options.method ?? "private-api",
+            },
+            scheduledFor: options.scheduledFor,
+            schedule: options.schedule,
+        };
+
+        return this.sdk.request("create-scheduled-message", payload);
     }
 
-    async getScheduledMessages(): Promise<any[]> {
+    async getScheduledMessages(): Promise<ScheduledMessage[]> {
         return this.sdk.request("get-scheduled-messages");
     }
 
-    async updateScheduledMessage(id: string, options: any): Promise<any> {
-        return this.sdk.request("update-scheduled-message", { id, ...options });
+    async updateScheduledMessage(id: number | string, options: UpdateScheduledMessageOptions): Promise<ScheduledMessage> {
+        const payload: SocketEventMap["update-scheduled-message"]["req"] = {
+            id,
+            type: "send-message",
+            payload: {
+                chatGuid: options.chatGuid,
+                message: options.message,
+                tempGuid: options.tempGuid,
+                subject: options.subject,
+                effectId: options.effectId,
+                selectedMessageGuid: options.selectedMessageGuid,
+                partIndex: options.partIndex,
+                ddScan: options.ddScan,
+                method: options.method ?? "private-api",
+            },
+            scheduledFor: options.scheduledFor,
+            schedule: options.schedule,
+        };
+
+        return this.sdk.request("update-scheduled-message", payload);
     }
 
-    async deleteScheduledMessage(id: string): Promise<void> {
+    async deleteScheduledMessage(id: number | string): Promise<void> {
         return this.sdk.request("delete-scheduled-message", { id });
     }
 }

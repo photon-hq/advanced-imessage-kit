@@ -2,21 +2,21 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AdvancedIMessageKit } from "../mobai";
-import type { Message } from "../interfaces";
-import type { SendAttachmentOptions, SendStickerOptions } from "../types";
+import type { SendAttachmentOptions, SendStickerOptions, QueuedAttachmentResult, SocketEventMap } from "../types";
 import * as base64 from "byte-base64";
 
 export class AttachmentModule {
     constructor(private readonly sdk: AdvancedIMessageKit) {}
 
     async getAttachmentCount(): Promise<number> {
-        const res = await this.sdk.request("get-attachment-count");
+        const res = await this.sdk.request<SocketEventMap["get-attachment-count"]["res"]>("get-attachment-count");
         // Assuming response format is { total: number }
         return res.total;
     }
 
-    async getAttachment(guid: string): Promise<any> {
-        return this.sdk.request("get-attachment", { identifier: guid });
+    async getAttachment(guid: string): Promise<SocketEventMap["get-attachment"]["res"]> {
+        const payload: SocketEventMap["get-attachment"]["req"] = { identifier: guid };
+        return this.sdk.request("get-attachment", payload);
     }
 
     async downloadAttachment(
@@ -36,12 +36,13 @@ export class AttachmentModule {
         const chunkSize = 1024 * 1024; // 1MB
         
         while (true) {
-            const res = await this.sdk.request<{ data: string } | null>("get-attachment-chunk", {
+            const payload: SocketEventMap["get-attachment-chunk"]["req"] = {
                 identifier: guid,
                 start,
                 chunkSize,
-                compress: false // Simplification
-            });
+                compress: false, // Simplification
+            };
+            const res = await this.sdk.request("get-attachment-chunk", payload);
             
             if (!res || !res.data) break;
             
@@ -62,12 +63,13 @@ export class AttachmentModule {
         const chunkSize = 1024 * 1024; // 1MB
 
         while (true) {
-            const res = await this.sdk.request<{ data: string } | null>("get-live-attachment-chunk", {
+            const payload: SocketEventMap["get-live-attachment-chunk"]["req"] = {
                 identifier: guid,
                 start,
                 chunkSize,
                 compress: false,
-            });
+            };
+            const res = await this.sdk.request("get-live-attachment-chunk", payload);
 
             if (!res || !res.data) break;
 
@@ -86,13 +88,14 @@ export class AttachmentModule {
         options?: { height?: number; width?: number; quality?: number },
     ): Promise<string> {
         // Use the get-attachment-blurhash socket route (may throw if blurhash is unsupported in SDK mode).
-        return this.sdk.request("get-attachment-blurhash", { 
+        const payload: SocketEventMap["get-attachment-blurhash"]["req"] = {
             identifier: guid,
-            ...options
-        });
+            ...options,
+        };
+        return this.sdk.request("get-attachment-blurhash", payload);
     }
 
-    async sendAttachment(options: SendAttachmentOptions): Promise<Message> {
+    async sendAttachment(options: SendAttachmentOptions): Promise<QueuedAttachmentResult> {
         // Socket upload uses send-message-chunk logic
         const fileBuffer = await readFile(options.filePath);
         const fileName = options.fileName || path.basename(options.filePath);
@@ -108,7 +111,7 @@ export class AttachmentModule {
             const chunk = fileBuffer.slice(start, end);
             const hasMore = end < fileBuffer.length;
             
-            await this.sdk.request("send-message-chunk", {
+            const payload: SocketEventMap["send-message-chunk"]["req"] = {
                 guid: options.chatGuid,
                 tempGuid,
                 message: null, // No text for pure attachment send usually
@@ -116,18 +119,27 @@ export class AttachmentModule {
                 attachmentChunkStart: start,
                 attachmentData: base64.bytesToBase64(chunk),
                 hasMore,
-                attachmentName: fileName
-            });
+                attachmentName: fileName,
+                isSticker: options.isSticker ?? false,
+                isAudioMessage: options.isAudioMessage ?? false,
+                selectedMessageGuid: options.selectedMessageGuid,
+            };
+
+            await this.sdk.request("send-message-chunk", payload);
             
             start = end;
         }
         
         // The final chunk queues an attachment send job; the socket route does not return the Message.
         // Consumers should rely on the new-message event and match by tempGuid.
-        return { guid: tempGuid } as any;
+        return {
+            chatGuid: options.chatGuid,
+            tempGuid,
+            attachmentGuid,
+        };
     }
 
-    async sendSticker(options: SendStickerOptions): Promise<Message> {
+    async sendSticker(options: SendStickerOptions): Promise<QueuedAttachmentResult> {
         return this.sendAttachment({
             chatGuid: options.chatGuid,
             filePath: options.filePath,

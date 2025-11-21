@@ -9,14 +9,15 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const message = await sdk.attachments.sendAttachment({
+            const result = await sdk.attachments.sendAttachment({
                 chatGuid: CHAT_GUID,
                 filePath: AUDIO_FILE_PATH,
                 isAudioMessage: true,
             });
 
-            console.log(`sent: ${message.guid}`);
-            console.log(`${new Date(message.dateCreated).toLocaleString()}`);
+            console.log(
+                `audio attachment queued: chatGuid=${result.chatGuid}, tempGuid=${result.tempGuid}, attachmentGuid=${result.attachmentGuid}`,
+            );
         } catch (error) {
             handleError(error, "Failed to send audio message");
         }

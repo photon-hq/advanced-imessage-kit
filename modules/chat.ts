@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import type { AdvancedIMessageKit } from "../mobai";
 import type { Chat, Message } from "../interfaces";
 import * as base64 from "byte-base64";
+import type { SocketEventMap } from "../types";
 
 export class ChatModule {
     constructor(private readonly sdk: AdvancedIMessageKit) {}
@@ -20,28 +21,36 @@ export class ChatModule {
         effectId?: string;
         attributedBody?: Record<string, unknown>;
     }): Promise<Chat> {
-        return this.sdk.request("start-chat", {
+        if (!options.addresses || options.addresses.length === 0) {
+            throw new Error("addresses must contain at least one recipient");
+        }
+
+        const payload: SocketEventMap["start-chat"]["req"] = {
             participants: options.addresses,
             message: options.message,
             service: options.service,
-            tempGuid: options.tempGuid
-        });
+            tempGuid: options.tempGuid,
+        };
+
+        return this.sdk.request("start-chat", payload);
     }
 
     async getChat(guid: string, options?: { with?: string[] }): Promise<Chat> {
-        return this.sdk.request("get-chat", {
+        const payload: SocketEventMap["get-chat"]["req"] = {
             chatGuid: guid,
-            ...options
-        });
+            ...(options ?? {}),
+        };
+        return this.sdk.request("get-chat", payload);
     }
 
     async updateChat(guid: string, options: { displayName?: string }): Promise<Chat> {
         // Only displayName rename is supported via the rename-group socket route.
         if (options.displayName) {
-             return this.sdk.request("rename-group", {
+            const payload: SocketEventMap["rename-group"]["req"] = {
                 identifier: guid,
-                newName: options.displayName
-            });
+                newName: options.displayName,
+            };
+            return this.sdk.request("rename-group", payload);
         }
         throw new Error("Only displayName update supported via socket currently");
     }
@@ -63,17 +72,19 @@ export class ChatModule {
     }
 
     async addParticipant(chatGuid: string, address: string): Promise<Chat> {
-        return this.sdk.request("add-participant", {
+        const payload: SocketEventMap["add-participant"]["req"] = {
             identifier: chatGuid,
-            address
-        });
+            address,
+        };
+        return this.sdk.request("add-participant", payload);
     }
 
     async removeParticipant(chatGuid: string, address: string): Promise<Chat> {
-        return this.sdk.request("remove-participant", {
+        const payload: SocketEventMap["remove-participant"]["req"] = {
             identifier: chatGuid,
-            address
-        });
+            address,
+        };
+        return this.sdk.request("remove-participant", payload);
     }
 
     async getChatMessages(
@@ -82,24 +93,39 @@ export class ChatModule {
             offset?: number;
             limit?: number;
             sort?: "ASC" | "DESC";
-            before?: number;
-            after?: number;
+            before?: number | Date;
+            after?: number | Date;
+            withChats?: boolean;
+            withAttachments?: boolean;
+            withChatParticipants?: boolean;
+            where?: unknown;
             with?: string[];
         },
     ): Promise<Message[]> {
-        return this.sdk.request("get-chat-messages", {
+        const payload: SocketEventMap["get-chat-messages"]["req"] = {
             identifier: chatGuid,
-            ...options
-        });
+            offset: options?.offset,
+            limit: options?.limit,
+            after: options?.after,
+            before: options?.before,
+            withChats: options?.withChats,
+            withChatParticipants: options?.withChatParticipants,
+            withAttachments: options?.withAttachments,
+            sort: options?.sort,
+            where: options?.where,
+        };
+
+        return this.sdk.request("get-chat-messages", payload);
     }
 
     async setGroupIcon(chatGuid: string, filePath: string): Promise<void> {
         const fileBuffer = await readFile(filePath);
         // Send base64-encoded icon data to the set-group-icon socket route.
-        return this.sdk.request("set-group-icon", {
+        const payload: SocketEventMap["set-group-icon"]["req"] = {
             chatGuid,
-            iconData: base64.bytesToBase64(fileBuffer)
-        });
+            iconData: base64.bytesToBase64(fileBuffer),
+        };
+        return this.sdk.request("set-group-icon", payload);
     }
 
     async removeGroupIcon(chatGuid: string): Promise<void> {
@@ -107,9 +133,8 @@ export class ChatModule {
     }
 
     async getGroupIcon(chatGuid: string): Promise<Buffer> {
-        const res = await this.sdk.request("get-group-icon", { chatGuid });
-        // res should be base64 string
-        return Buffer.from(res, 'base64');
+        const res = await this.sdk.request<SocketEventMap["get-group-icon"]["res"]>("get-group-icon", { chatGuid });
+        return Buffer.from(res, "base64");
     }
 
     async getChatCount(options?: { includeArchived?: boolean }): Promise<{

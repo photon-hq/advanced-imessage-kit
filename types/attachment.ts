@@ -7,6 +7,12 @@ export interface SendAttachmentOptions {
     selectedMessageGuid?: string;
 }
 
+export interface QueuedAttachmentResult {
+    chatGuid: string;
+    tempGuid: string;
+    attachmentGuid: string;
+}
+
 export interface Attachment {
     guid: string;
     originalROWID: number;

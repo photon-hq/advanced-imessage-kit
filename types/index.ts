@@ -4,6 +4,7 @@ export * from "./client";
 export * from "./handle";
 export * from "./message";
 export * from "./server";
+export * from "./scheduled";
 export * from "./sticker";
 export * from "./tapback";
 export * from "./socketEvents";

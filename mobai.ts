@@ -13,7 +13,44 @@ import {
     ScheduledMessageModule,
     ServerModule,
 } from "./modules";
+import {
+    CHAT_READ_STATUS_CHANGED,
+    GROUP_ICON_CHANGED,
+    GROUP_ICON_REMOVED,
+    GROUP_NAME_CHANGE,
+    MESSAGE_SEND_ERROR,
+    MESSAGE_UPDATED,
+    NEW_MESSAGE,
+    NEW_SERVER,
+    PARTICIPANT_ADDED,
+    PARTICIPANT_LEFT,
+    PARTICIPANT_REMOVED,
+    TYPING_INDICATOR,
+} from "./events";
 import type { ClientConfig, SocketEventMap } from "./types";
+
+export interface SDKErrorResponse {
+    status?: number;
+    message?: string;
+    error?: {
+        type?: string;
+        message?: string;
+    } | null;
+    data?: unknown;
+    encrypted?: boolean;
+}
+
+export class SDKError extends Error {
+    public readonly event: string;
+    public readonly response?: SDKErrorResponse;
+
+    constructor(message: string, event: string, response?: SDKErrorResponse) {
+        super(message);
+        this.name = "SDKError";
+        this.event = event;
+        this.response = response;
+    }
+}
 
 export class AdvancedIMessageKit extends EventEmitter {
     private static getGlobalSdk = (): AdvancedIMessageKit | null => (globalThis as any).__AdvancedIMessageKit__ ?? null;
@@ -50,6 +87,9 @@ export class AdvancedIMessageKit extends EventEmitter {
 
     // Message deduplication feature
     private processedMessages = new Set<string>();
+
+    private serverEventsBound = false;
+    private disconnectHandlerBound = false;
 
     private constructor(config: ClientConfig = {}) {
         super();
@@ -117,60 +157,67 @@ export class AdvancedIMessageKit extends EventEmitter {
                 // Let's allow it to queue internally by socket.io if possible, but socket.io usually buffers.
             }
 
-            this.socket.emit(event, data, (response: any) => {
+            this.socket.emit(event, data, (response: SDKErrorResponse | undefined) => {
                 clearTimeout(timeoutId);
 
                 // Standardize response handling based on the server's ResponseJson structure
-                if (response?.status === 200) {
+                if (response && response.status === 200) {
                     resolve(response.data);
-                } else {
-                    const errorMsg = response?.error?.message || response?.message || "Unknown server error";
-                    reject(new Error(errorMsg));
+                    return;
                 }
+
+                const errorMsg = response?.error?.message || response?.message || "Unknown server error";
+                reject(new SDKError(errorMsg, event, response));
             });
         });
     }
 
     async connect() {
         const serverEvents = [
-            "new-message",
+            NEW_MESSAGE,
             "message-updated",
-            "updated-message",
-            "chat-read-status-changed",
-            "group-name-change",
-            "participant-added",
-            "participant-removed",
-            "participant-left",
-            "group-icon-changed",
-            "group-icon-removed",
-            "message-send-error",
-            "typing-indicator",
-            "new-server",
+            MESSAGE_UPDATED,
+            CHAT_READ_STATUS_CHANGED,
+            GROUP_NAME_CHANGE,
+            PARTICIPANT_ADDED,
+            PARTICIPANT_REMOVED,
+            PARTICIPANT_LEFT,
+            GROUP_ICON_CHANGED,
+            GROUP_ICON_REMOVED,
+            MESSAGE_SEND_ERROR,
+            TYPING_INDICATOR,
+            NEW_SERVER,
         ];
 
-        for (const eventName of serverEvents) {
-            this.socket.on(eventName, (...args: any[]) => {
-                if (eventName === "new-message" && args.length > 0) {
-                    const message = args[0];
-                    if (message?.guid) {
-                        // Check if this message has already been processed
-                        if (this.processedMessages.has(message.guid)) {
-                            this.logger.debug(`Message already processed, skipping duplicate: ${message.guid}`);
-                            return;
+        if (!this.serverEventsBound) {
+            for (const eventName of serverEvents) {
+                this.socket.on(eventName, (...args: any[]) => {
+                    if (eventName === NEW_MESSAGE && args.length > 0) {
+                        const message = args[0];
+                        if (message?.guid) {
+                            // Check if this message has already been processed
+                            if (this.processedMessages.has(message.guid)) {
+                                this.logger.debug(`Message already processed, skipping duplicate: ${message.guid}`);
+                                return;
+                            }
+                            // Mark message as processed
+                            this.processedMessages.add(message.guid);
                         }
-                        // Mark message as processed
-                        this.processedMessages.add(message.guid);
                     }
-                }
 
-                this.emit(eventName, ...args);
-            });
+                    this.emit(eventName, ...args);
+                });
+            }
+            this.serverEventsBound = true;
         }
 
-        this.socket.on("disconnect", () => {
-            this.logger.info("Disconnected from iMessage server");
-            this.emit("disconnect");
-        });
+        if (!this.disconnectHandlerBound) {
+            this.socket.on("disconnect", () => {
+                this.logger.info("Disconnected from iMessage server");
+                this.emit("disconnect");
+            });
+            this.disconnectHandlerBound = true;
+        }
 
         if (this.socket.connected) {
             this.logger.info("Already connected to iMessage server");

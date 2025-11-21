@@ -20,18 +20,14 @@ async function main() {
         console.log(`sending ${fileName} (${fileSize} KB)`);
 
         try {
-            const message = await sdk.attachments.sendAttachment({
+            const result = await sdk.attachments.sendAttachment({
                 chatGuid: CHAT_GUID,
                 filePath: ATTACHMENT_PATH,
             });
 
-            console.log(`sent: ${message.guid}`);
-            if (message.attachments && message.attachments.length > 0) {
-                const att = message.attachments[0];
-                if (att) {
-                    console.log(`${att.transferName} (${att.mimeType || "unknown"})`);
-                }
-            }
+            console.log(
+                `attachment queued: chatGuid=${result.chatGuid}, tempGuid=${result.tempGuid}, attachmentGuid=${result.attachmentGuid}`,
+            );
         } catch (error) {
             handleError(error, "Failed to send attachment");
         }

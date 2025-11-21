@@ -1,13 +1,14 @@
 import type { Attachment, AttachmentResponse } from "./attachment";
 import type { Chat, ChatResponse } from "./chat";
 import type { Handle, HandleResponse } from "./handle";
+import type { MessageEffectId } from "../effects";
 
 export interface SendMessageOptions {
     chatGuid: string;
     message: string;
     tempGuid?: string;
     subject?: string;
-    effectId?: string;
+    effectId?: MessageEffectId;
     selectedMessageGuid?: string;
     partIndex?: number;
 }

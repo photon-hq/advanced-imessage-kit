@@ -24,20 +24,15 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.log(`Sending sticker as a reply to the previous message...`);
-            const stickerMessage = await sdk.attachments.sendSticker({
+            const stickerResult = await sdk.attachments.sendSticker({
                 chatGuid: CHAT_GUID,
                 filePath: STICKER_PATH,
                 selectedMessageGuid: textMessage.guid, // Attach sticker to the text message
             });
 
-            console.log("\n✓ Sticker sent successfully!");
-            console.log(`Sticker message GUID: ${stickerMessage.guid}`);
-            console.log(`Attachments: ${stickerMessage.attachments?.length || 0}`);
-            if (stickerMessage.attachments?.[0]) {
-                const attachment = stickerMessage.attachments[0] as AttachmentResponse;
-                console.log(`Attachment type: ${attachment.mimeType || "unknown"}`);
-                console.log(`Is sticker: ${attachment.isSticker || false}`);
-            }
+            console.log("\n✓ Sticker send queued successfully!");
+            console.log(`Temp GUID (track via new-message events): ${stickerResult.tempGuid}`);
+            console.log(`Attachment GUID: ${stickerResult.attachmentGuid}`);
         } catch (error) {
             handleError(error, "Failed to send sticker");
         }

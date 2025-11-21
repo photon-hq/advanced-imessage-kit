@@ -45,12 +45,14 @@ async function main() {
 
             if (allScheduled.length > 0) {
                 const msg = allScheduled[0];
+                if (!msg) return;
                 const newTime = new Date(Date.now() + 10 * 60 * 1000);
 
                 const updated = await sdk.scheduledMessages.updateScheduledMessage(msg.id, {
                     ...msg.payload,
                     message: "Updated message!",
                     scheduledFor: newTime,
+                    schedule: msg.schedule,
                 });
 
                 console.log(`updated ${msg.id} to ${new Date(updated.scheduledFor).toLocaleString()}`);
