@@ -126,6 +126,11 @@ export class AdvancedIMessageKit extends EventEmitter {
 
         this.scheduledMessages = new ScheduledMessageModule(this);
         this.server = new ServerModule(this);
+
+        // Setup periodic cleanup for processedMessages to prevent memory leaks
+        setInterval(() => {
+            this.clearProcessedMessages(1000);
+        }, 1000 * 60 * 60); // Every hour
     }
 
     /**

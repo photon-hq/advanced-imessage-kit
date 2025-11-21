@@ -97,8 +97,23 @@ export class AttachmentModule {
 
     async sendAttachment(options: SendAttachmentOptions): Promise<QueuedAttachmentResult> {
         // Socket upload uses send-message-chunk logic
-        const fileBuffer = await readFile(options.filePath);
-        const fileName = options.fileName || path.basename(options.filePath);
+        let fileBuffer: Buffer;
+        let fileName = options.fileName;
+
+        if (options.fileBuffer) {
+            fileBuffer = options.fileBuffer;
+            if (!fileName) {
+                throw new Error("fileName is required when sending attachment from buffer");
+            }
+        } else if (options.filePath) {
+            fileBuffer = await readFile(options.filePath);
+            if (!fileName) {
+                fileName = path.basename(options.filePath);
+            }
+        } else {
+            throw new Error("Either filePath or fileBuffer must be provided");
+        }
+
         const attachmentGuid = randomUUID();
         const tempGuid = randomUUID();
         
@@ -119,7 +134,7 @@ export class AttachmentModule {
                 attachmentChunkStart: start,
                 attachmentData: base64.bytesToBase64(chunk),
                 hasMore,
-                attachmentName: fileName,
+                attachmentName: fileName!, // fileName is guaranteed to be set here
                 isSticker: options.isSticker ?? false,
                 isAudioMessage: options.isAudioMessage ?? false,
                 selectedMessageGuid: options.selectedMessageGuid,
@@ -140,6 +155,9 @@ export class AttachmentModule {
     }
 
     async sendSticker(options: SendStickerOptions): Promise<QueuedAttachmentResult> {
+        if (!options.filePath) {
+             throw new Error("filePath is required for sendSticker helper");
+        }
         return this.sendAttachment({
             chatGuid: options.chatGuid,
             filePath: options.filePath,

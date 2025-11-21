@@ -1,6 +1,7 @@
 export interface SendAttachmentOptions {
     chatGuid: string;
-    filePath: string;
+    filePath?: string;
+    fileBuffer?: Buffer;
     fileName?: string;
     isAudioMessage?: boolean;
     isSticker?: boolean;
