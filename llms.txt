@@ -1,0 +1,243 @@
+Advanced iMessage Kit — LLM Reference (SDK)
+==========================================
+
+Library: @photon-ai/advanced-imessage-kit
+Type: TypeScript iMessage SDK (client only)
+Node: >= 18
+
+This file provides a compact, LLM-friendly overview of the public SDK surface.
+It focuses on the `IMessageSDK` class and its main methods.
+For full details, see the project README.
+
+
+1. Overview
+-----------
+
+Advanced iMessage Kit is a TypeScript SDK for interacting with an Advanced iMessage Kit server
+running on macOS. The SDK connects via Socket.IO and exposes a high-level `IMessageSDK` class
+for:
+
+- Sending and receiving iMessages via a remote server
+- Querying messages and chats
+- Managing group chats, participants, and icons
+- Working with attachments, stickers, and voice messages
+- Scheduled messages and analytics
+
+The server decides how to interface with macOS (e.g. private APIs, AppleScript). This SDK
+remains platform-agnostic and only speaks in terms of socket events and JSON payloads.
+
+
+2. Installation
+---------------
+
+npm install @photon-ai/advanced-imessage-kit
+bun add @photon-ai/advanced-imessage-kit
+
+
+3. Basic usage
+--------------
+
+TypeScript example for connecting, listening, sending, and shutting down:
+
+import { IMessageSDK } from "@photon-ai/advanced-imessage-kit";
+
+const sdk = new IMessageSDK({
+  serverUrl: "{your-subdomain}.imsgd.photon.codes",
+  logLevel: "info",
+  // apiKey: process.env.ADV_IMSG_API_KEY, // optional depending on server config
+});
+
+await sdk.connect();
+
+sdk.on("new-message", (message) => {
+  console.log("New message:", message.text);
+});
+
+await sdk.send("any;-;+1234567890", "Hello World!");
+
+await sdk.close();
+
+
+4. Core class: IMessageSDK
+--------------------------
+
+IMessageSDK is the main entry point. It wraps an internal RemoteClient and a set of
+modules under `modules/`.
+
+Typical lifecycle:
+
+- constructor(config)
+- await connect()
+- use high-level APIs (messages, chats, attachments, etc.)
+- await close()
+
+Key configuration fields:
+
+- serverUrl: string (e.g. "{your-subdomain}.imsgd.photon.codes")
+- apiKey?: string (optional, server-specific)
+- logLevel?: "debug" | "info" | "warn" | "error"
+
+
+5. Message operations (selected)
+--------------------------------
+
+High-level helpers:
+
+- send(to, content)
+  - `to` is either a chat GUID or an address (phone/email)
+  - `content` can be a string or an object with text and attachments
+
+Low-level message APIs (representative examples):
+
+- sendMessage(options)
+  - options.chatGuid: string
+  - options.message?: string
+  - options.subject?: string
+  - options.effectId?: string (see MESSAGE_EFFECTS)
+  - options.selectedMessageGuid?: string (for replies)
+- getMessages(options)
+  - Filter messages by chat, offset, limit, etc.
+- getMessageCount(options?)
+  - Returns total counts with optional filters
+- getSentMessageCount(options?)
+- editMessage(options)
+  - Edit a previously sent message
+- sendReaction(options)
+  - Tapback / reaction helpers
+- unsendMessage(options)
+  - Attempt to unsend a message
+
+Message deduplication helpers:
+
+- clearProcessedMessages(maxSize = 1000)
+- getProcessedMessageCount()
+
+
+6. Chat management (selected)
+-----------------------------
+
+- getChats()
+  - Returns a list of chats.
+- getChat(chatGuid, options?)
+  - Fetch a single chat with optional relations.
+- createChat(options)
+  - options.addresses: string[]
+  - options.message?: string
+  - options.service?: "iMessage" | "SMS"
+
+Group operations:
+
+- updateChat(chatGuid, { displayName })
+- addParticipant(chatGuid, address)
+- removeParticipant(chatGuid, address)
+- leaveChat(chatGuid)
+
+Group icons:
+
+- setGroupIcon(chatGuid, filePath)
+- getGroupIcon(chatGuid) -> Buffer
+- removeGroupIcon(chatGuid)
+
+Chat status helpers:
+
+- markChatRead(chatGuid)
+- markChatUnread(chatGuid)
+- startTyping(chatGuid)
+- stopTyping(chatGuid)
+- getChatMessages(chatGuid, options)
+
+
+7. Attachments and stickers (selected)
+--------------------------------------
+
+- sendAttachment(options)
+  - options.chatGuid: string
+  - options.filePath?: string
+  - options.fileBuffer?: Buffer
+  - options.fileName?: string
+- sendSticker(options)
+  - Convenience wrapper for sending a sticker-like attachment.
+
+Attachment download helpers exist for fetching binary data from the server
+(e.g. via chunked download routes), but details may change; consult the
+current TypeScript types in `modules/attachment.ts` and `types/attachment.ts`.
+
+
+8. Scheduled messages, Find My, FaceTime, server info
+-----------------------------------------------------
+
+Higher-level domains surfaced through `IMessageSDK` include:
+
+- Scheduled messages
+  - createScheduledMessage(options)
+  - getScheduledMessages()
+  - updateScheduledMessage(id, options)
+  - deleteScheduledMessage(id)
+- Find My / iCloud
+  - getFindMyFriends()
+  - refreshFindMyFriends()
+- FaceTime
+  - createFaceTimeLink()
+- Server metadata and analytics
+  - getServerInfo()
+  - getMessageStats()
+  - getServerLogs(count?)
+  - getAlerts(), markAlertsRead(ids)
+  - getMediaStatistics(options?)
+  - getMediaStatisticsByChat(options?)
+
+Exact signatures are defined in the TypeScript sources and SocketEventMap
+under `types/`.
+
+
+9. Events
+---------
+
+The SDK re-emits server events from the underlying RemoteClient.
+Common event names include (non-exhaustive):
+
+- "new-message"
+- "updated-message"
+- "chat-read-status-changed"
+- "group-name-change"
+- "participant-added"
+- "participant-removed"
+- "participant-left"
+- "group-icon-changed"
+- "group-icon-removed"
+- "message-send-error"
+- "typing-indicator"
+
+Event names are defined in `events.ts`.
+
+
+10. Watcher and plugins (high level)
+------------------------------------
+
+The SDK includes a simple watcher and a plugin system:
+
+- `startWatching(events?)` / `stopWatching()`
+  - Subscribe to new-message events and dispatch them to optional
+    callbacks (e.g. `onMessage`, `onGroupMessage`, `onDirectMessage`,
+    `onError`).
+- Plugin hooks (see README and `plugins/core.ts`):
+  - `onInit`, `onBeforeQuery`, `onAfterQuery`, `onBeforeSend`,
+    `onAfterSend`, `onNewMessage`, `onError`, `onDestroy`.
+
+These are intended as building blocks for bots and agents that need
+higher-level lifecycle and logging behavior.
+
+
+11. Design notes and constraints
+--------------------------------
+
+- This SDK is a thin client over a separate server. It must not embed
+  macOS-specific logic.
+- The server is responsible for using any private APIs or AppleScript.
+  Message sending and receiving semantics are controlled server-side.
+- Client APIs should not expose transport-level flags like
+  `method: "apple-script" | "private-api"`. Chat creation and sending
+  helpers assume the server enforces its own policies.
+
+For detailed examples, edge cases, and up-to-date types, prefer reading
+`README.md`, `sdk.ts`, and the `types/` directory in this repository.

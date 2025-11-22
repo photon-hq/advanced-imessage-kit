@@ -131,7 +131,9 @@ jobs:
           body_path: CHANGELOG.md
           draft: false
           prerelease: false
-          files: ${{ steps.bundle.outputs.archive }}
+          files: |
+            ${{ steps.bundle.outputs.archive }}
+            llms.txt
           overwrite_files: true
           fail_on_unmatched_files: true
         env:

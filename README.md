@@ -1053,6 +1053,17 @@ Automatic reply example that responds to incoming messages.
 bun run examples/auto-reply-hey.ts
 ```
 
+## AI / LLM Tools
+
+For language models and AI coding assistants, this repository includes an `llms.txt` file at the project root.
+
+[![Download llms.txt](https://img.shields.io/badge/download-llms.txt-blue)](./llms.txt)
+
+- When using the SDK directly from GitHub, tools can read `llms.txt` from the repository root.
+- When using the SDK via npm (`@photon-ai/advanced-imessage-kit`), `llms.txt` is included in the published package and can be read from the installed module directory.
+
+`llms.txt` provides a compact, LLM-friendly summary of the public SDK surface and is intended to complement this README.
+
 ## License
 
 MIT License

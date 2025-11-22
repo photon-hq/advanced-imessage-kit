@@ -43,7 +43,8 @@
     "files": [
         "dist/",
         "README.md",
-        "LICENSE"
+        "LICENSE",
+        "llms.txt"
     ],
     "devDependencies": {
         "@biomejs/biome": "^2.3.3",
