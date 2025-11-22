@@ -13,7 +13,7 @@ async function main() {
 
         try {
             console.log("Sending a text message first...");
-            const textMessage = await sdk.messages.sendMessage({
+            const textMessage = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "Here comes a sticker! 👇",
             });
@@ -24,7 +24,7 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.log(`Sending sticker as a reply to the previous message...`);
-            const stickerResult = await sdk.attachments.sendSticker({
+            const stickerResult = await sdk.sendSticker({
                 chatGuid: CHAT_GUID,
                 filePath: STICKER_PATH,
                 selectedMessageGuid: textMessage.guid, // Attach sticker to the text message
@@ -37,7 +37,7 @@ async function main() {
             handleError(error, "Failed to send sticker");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

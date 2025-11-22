@@ -8,8 +8,8 @@ async function main() {
     sdk.on("ready", async () => {
         for (const contact of CONTACTS_TO_CHECK) {
             try {
-                const hasIMessage = await sdk.handles.getHandleAvailability(contact, "imessage");
-                const hasFaceTime = await sdk.handles.getHandleAvailability(contact, "facetime");
+                const hasIMessage = await sdk.getHandleAvailability(contact, "imessage");
+                const hasFaceTime = await sdk.getHandleAvailability(contact, "facetime");
 
                 const chatGuid = hasIMessage ? `iMessage;-;${contact}` : `SMS;-;${contact}`;
 
@@ -23,7 +23,7 @@ async function main() {
             }
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

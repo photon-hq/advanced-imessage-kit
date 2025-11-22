@@ -1,11 +1,11 @@
 import { readFile } from "node:fs/promises";
-import type { AdvancedIMessageKit } from "../mobai";
+import type { RemoteClient } from "../remoteClient";
 import type { Chat, Message } from "../interfaces";
 import * as base64 from "byte-base64";
 import type { SocketEventMap } from "../types";
 
 export class ChatModule {
-    constructor(private readonly sdk: AdvancedIMessageKit) {}
+    constructor(private readonly sdk: RemoteClient) {}
 
     async getChats(): Promise<Chat[]> {
         return this.sdk.request("get-chats");
@@ -14,7 +14,6 @@ export class ChatModule {
     async createChat(options: {
         addresses: string[];
         message?: string;
-        method?: "apple-script" | "private-api";
         service?: "iMessage" | "SMS";
         tempGuid?: string;
         subject?: string;

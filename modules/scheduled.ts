@@ -1,4 +1,4 @@
-import type { AdvancedIMessageKit } from "../mobai";
+import type { RemoteClient } from "../remoteClient";
 import type {
     CreateScheduledMessageOptions,
     ScheduledMessage,
@@ -7,7 +7,7 @@ import type {
 } from "../types";
 
 export class ScheduledMessageModule {
-    constructor(private readonly sdk: AdvancedIMessageKit) {}
+    constructor(private readonly sdk: RemoteClient) {}
 
     async createScheduledMessage(options: CreateScheduledMessageOptions): Promise<ScheduledMessage> {
         const payload: SocketEventMap["create-scheduled-message"]["req"] = {
@@ -21,7 +21,6 @@ export class ScheduledMessageModule {
                 selectedMessageGuid: options.selectedMessageGuid,
                 partIndex: options.partIndex,
                 ddScan: options.ddScan,
-                method: options.method ?? "private-api",
             },
             scheduledFor: options.scheduledFor,
             schedule: options.schedule,
@@ -47,7 +46,6 @@ export class ScheduledMessageModule {
                 selectedMessageGuid: options.selectedMessageGuid,
                 partIndex: options.partIndex,
                 ddScan: options.ddScan,
-                method: options.method ?? "private-api",
             },
             scheduledFor: options.scheduledFor,
             schedule: options.schedule,

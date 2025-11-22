@@ -11,7 +11,7 @@ async function main() {
     sdk.on("ready", async () => {
         if (!fs.existsSync(ATTACHMENT_PATH)) {
             console.error(`file not found: ${ATTACHMENT_PATH}`);
-            await sdk.disconnect();
+            await sdk.close();
             process.exit(1);
         }
 
@@ -20,7 +20,7 @@ async function main() {
         console.log(`sending ${fileName} (${fileSize} KB)`);
 
         try {
-            const result = await sdk.attachments.sendAttachment({
+            const result = await sdk.sendAttachment({
                 chatGuid: CHAT_GUID,
                 filePath: ATTACHMENT_PATH,
             });
@@ -32,7 +32,7 @@ async function main() {
             handleError(error, "Failed to send attachment");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

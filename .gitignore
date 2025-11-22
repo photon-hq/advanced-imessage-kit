@@ -1,5 +1,6 @@
 # dependencies (bun install)
 node_modules
+.vscode/
 
 # lock files (use bun.lock instead)
 package-lock.json

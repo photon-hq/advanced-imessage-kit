@@ -9,7 +9,7 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const result = await sdk.attachments.sendAttachment({
+            const result = await sdk.sendAttachment({
                 chatGuid: CHAT_GUID,
                 filePath: AUDIO_FILE_PATH,
                 isAudioMessage: true,
@@ -22,7 +22,7 @@ async function main() {
             handleError(error, "Failed to send audio message");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

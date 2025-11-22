@@ -1,7 +1,7 @@
-import type { AdvancedIMessageKit } from "../mobai";
+import type { RemoteClient } from "../remoteClient";
 
 export class ServerModule {
-    constructor(private readonly sdk: AdvancedIMessageKit) {}
+    constructor(private readonly sdk: RemoteClient) {}
 
     async getServerInfo(): Promise<any> {
         return this.sdk.request("get-server-metadata");

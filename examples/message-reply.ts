@@ -10,7 +10,7 @@ async function main() {
 
         try {
             console.log("Sending original message...");
-            const originalMessage = await sdk.messages.sendMessage({
+            const originalMessage = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "What's your favorite color?",
             });
@@ -21,7 +21,7 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.log("Sending reply to the original message...");
-            const replyMessage = await sdk.messages.sendMessage({
+            const replyMessage = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "My favorite color is blue! 💙",
                 selectedMessageGuid: originalMessage.guid,
@@ -35,7 +35,7 @@ async function main() {
             handleError(error, "Failed to send reply");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

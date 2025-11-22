@@ -1,4 +1,3 @@
-import { AdvancedIMessageKit } from "../index";
 import { createSDK, handleExit } from "./utils";
 
 async function main() {

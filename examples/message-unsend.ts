@@ -11,7 +11,7 @@ async function main() {
             let messageGuid = MESSAGE_GUID;
 
             if (!messageGuid) {
-                const message = await sdk.messages.sendMessage({
+                const message = await sdk.sendMessage({
                     chatGuid: CHAT_GUID,
                     message: "This message will be unsent in 3 seconds!",
                 });
@@ -22,7 +22,7 @@ async function main() {
                 await new Promise((resolve) => setTimeout(resolve, 3000));
             }
 
-            const unsentMessage = await sdk.messages.unsendMessage({
+            const unsentMessage = await sdk.unsendMessage({
                 messageGuid: messageGuid,
             });
 
@@ -31,7 +31,7 @@ async function main() {
             handleError(error, "Failed to unsend message");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

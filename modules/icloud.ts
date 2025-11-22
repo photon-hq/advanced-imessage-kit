@@ -1,7 +1,7 @@
-import type { AdvancedIMessageKit } from "../mobai";
+import type { RemoteClient } from "../remoteClient";
 
 export class ICloudModule {
-    constructor(private readonly sdk: AdvancedIMessageKit) {}
+    constructor(private readonly sdk: RemoteClient) {}
 
     async getFindMyFriends(): Promise<any[]> {
         return this.sdk.request("get-findmy-friends");

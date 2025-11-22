@@ -38,10 +38,12 @@ bun add @photon-ai/advanced-imessage-kit
 ### Basic Usage
 
 ```typescript
-import { SDK } from "@photon-ai/advanced-imessage-kit";
+import { IMessageSDK } from "@photon-ai/advanced-imessage-kit";
 
-const sdk = SDK({
+const sdk = new IMessageSDK({
   serverUrl: "{your-subdomain}.imsgd.photon.codes", // Your subdomain is the unique link address assigned to you
+  logLevel: "info",
+  // apiKey: process.env.ADV_IMSG_API_KEY, // Optional, see Configuration
 });
 
 // Connect to the server
@@ -52,14 +54,11 @@ sdk.on("new-message", (message) => {
   console.log("New message:", message.text);
 });
 
-// Send a message
-await sdk.messages.sendMessage({
-  chatGuid: "any;-;+1234567890",
-  message: "Hello World!",
-});
+// Send a message (chat GUID or phone/email address)
+await sdk.send("any;-;+1234567890", "Hello World!");
 
-// Disconnect when done
-await sdk.disconnect();
+// Graceful shutdown when done
+await sdk.close();
 ```
 
 ## Core API
@@ -67,11 +66,12 @@ await sdk.disconnect();
 ### Initialization & Connection
 
 ```typescript
-import { SDK } from "@photon-ai/advanced-imessage-kit";
+import { IMessageSDK } from "@photon-ai/advanced-imessage-kit";
 
-const sdk = SDK({
+const sdk = new IMessageSDK({
   serverUrl: "{your-subdomain}.imsgd.photon.codes", // Your subdomain is the unique link address assigned to you
   logLevel: "info", // Log level: 'debug' | 'info' | 'warn' | 'error'
+  apiKey: process.env.ADV_IMSG_API_KEY, // Optional, see Configuration
 });
 
 // Connect to server
@@ -82,8 +82,8 @@ sdk.on("ready", () => {
   console.log("SDK is ready!");
 });
 
-// Graceful disconnect
-await sdk.disconnect();
+// Graceful shutdown
+await sdk.close();
 ```
 
 ### Connection Management
@@ -99,14 +99,11 @@ const count = sdk.getProcessedMessageCount(); // Get processed message count
 ### Sending Messages
 
 ```typescript
-// Send text message
-const message = await sdk.messages.sendMessage({
-  chatGuid: "any;-;+1234567890",
-  message: "Hello World!",
-});
+// High-level helper: send by chat GUID or address
+await sdk.send("any;-;+1234567890", "Hello World!");
 
-// Send message with options
-await sdk.messages.sendMessage({
+// Low-level send with options (effectId, subject, reply, etc.)
+const message = await sdk.sendMessage({
   chatGuid: "any;-;+1234567890",
   message: "Important message",
   subject: "Subject line",
@@ -114,7 +111,7 @@ await sdk.messages.sendMessage({
 });
 
 // Reply to message
-await sdk.messages.sendMessage({
+await sdk.sendMessage({
   chatGuid: "any;-;+1234567890",
   message: "This is a reply",
   selectedMessageGuid: "original-message-guid",
@@ -125,34 +122,34 @@ await sdk.messages.sendMessage({
 
 ```typescript
 // Get messages with filters
-const messages = await sdk.messages.getMessages({
+const { messages, total, unreadCount } = await sdk.getMessages({
   chatGuid: "any;-;+1234567890",
   limit: 50,
   offset: 0,
 });
 
 // Get message counts
-const totalCount = await sdk.messages.getMessageCount({
+const totalCount = await sdk.getMessageCount({
   chatGuid: "any;-;+1234567890",
   after: 1640995200000, // Timestamp
   before: 1641081600000, // Timestamp
 });
 
-const sentCount = await sdk.messages.getSentMessageCount();
+const sentCount = await sdk.getSentMessageCount();
 ```
 
 ### Message Actions
 
 ```typescript
 // Edit message
-await sdk.messages.editMessage({
+await sdk.editMessage({
   messageGuid: "message-guid",
   editedMessage: "Updated text",
   backwardsCompatibilityMessage: "Updated text",
 });
 
 // Add reaction
-await sdk.messages.sendReaction({
+await sdk.sendReaction({
   chatGuid: "any;-;+1234567890",
   messageGuid: "message-guid",
   reaction: "love", // Options: love, like, dislike, laugh, emphasize, question, -love, -like, etc.
@@ -160,7 +157,7 @@ await sdk.messages.sendReaction({
 });
 
 // Unsend message
-await sdk.messages.unsendMessage({
+await sdk.unsendMessage({
   messageGuid: "message-guid",
 });
 ```
@@ -170,20 +167,19 @@ await sdk.messages.unsendMessage({
 ### Chat Operations
 
 ```typescript
-// Get all chats
-const chats = await sdk.chats.getChats();
+// Get all chats (raw Chat objects)
+const chats = await sdk.getChats();
 
 // Get specific chat
-const chat = await sdk.chats.getChat("chat-guid", {
+const chat = await sdk.getChat("chat-guid", {
   with: ["participants", "lastMessage"],
 });
 
 // Create new chat
-const newChat = await sdk.chats.createChat({
+const newChat = await sdk.createChat({
   addresses: ["+1234567890", "+0987654321"],
   message: "Hello everyone!",
   service: "iMessage", // 'iMessage' or 'SMS'
-  method: "private-api", // 'apple-script' or 'private-api'
 });
 ```
 
@@ -191,46 +187,46 @@ const newChat = await sdk.chats.createChat({
 
 ```typescript
 // Update group name
-await sdk.chats.updateChat("chat-guid", {
+await sdk.updateChat("chat-guid", {
   displayName: "My Group Chat",
 });
 
 // Add participant
-await sdk.chats.addParticipant("chat-guid", "+1234567890");
+await sdk.addParticipant("chat-guid", "+1234567890");
 
 // Remove participant
-await sdk.chats.removeParticipant("chat-guid", "+1234567890");
+await sdk.removeParticipant("chat-guid", "+1234567890");
 
 // Leave group
-await sdk.chats.leaveChat("chat-guid");
+await sdk.leaveChat("chat-guid");
 ```
 
 ### Group Icons
 
 ```typescript
 // Set group icon
-await sdk.chats.setGroupIcon("chat-guid", "/path/to/image.jpg");
+await sdk.setGroupIcon("chat-guid", "/path/to/image.jpg");
 
 // Get group icon
-const iconBuffer = await sdk.chats.getGroupIcon("chat-guid");
+const iconBuffer = await sdk.getGroupIcon("chat-guid");
 
 // Remove group icon
-await sdk.chats.removeGroupIcon("chat-guid");
+await sdk.removeGroupIcon("chat-guid");
 ```
 
 ### Chat Status
 
 ```typescript
 // Mark as read/unread
-await sdk.chats.markChatRead("chat-guid");
-await sdk.chats.markChatUnread("chat-guid");
+await sdk.markChatRead("chat-guid");
+await sdk.markChatUnread("chat-guid");
 
 // Typing indicators
-await sdk.chats.startTyping("chat-guid");
-await sdk.chats.stopTyping("chat-guid");
+await sdk.startTyping("chat-guid");
+await sdk.stopTyping("chat-guid");
 
 // Get chat messages
-const messages = await sdk.chats.getChatMessages("chat-guid", {
+const messages = await sdk.getChatMessages("chat-guid", {
   limit: 100,
   offset: 0,
   sort: "DESC",
@@ -243,14 +239,14 @@ const messages = await sdk.chats.getChatMessages("chat-guid", {
 
 ```typescript
 // Send file attachment
-const message = await sdk.attachments.sendAttachment({
+const message = await sdk.sendAttachment({
   chatGuid: "any;-;+1234567890",
   filePath: "/path/to/file.jpg",
   fileName: "custom-name.jpg", // Optional
 });
 
 // Send sticker
-await sdk.attachments.sendSticker({
+await sdk.sendSticker({
   chatGuid: "any;-;+1234567890",
   filePath: "/path/to/sticker.png",
   selectedMessageGuid: "message-to-reply-to", // Optional
@@ -263,7 +259,7 @@ Voice messages differ from regular audio attachments. Ensure the audio file path
 
 ```typescript
 // Send voice message
-const message = await sdk.attachments.sendAttachment({
+const message = await sdk.sendAttachment({
   chatGuid: "any;-;+1234567890",
   filePath: "/path/to/audio.mp3",
   isAudioMessage: true,
@@ -275,7 +271,7 @@ sdk.on("new-message", async (msg) => {
     const att = msg.attachments?.[0];
     if (att) {
       // Download original audio attachment
-      const audioBuffer = await sdk.attachments.downloadAttachment(att.guid, {
+      const audioBuffer = await sdk.downloadAttachment(att.guid, {
         original: true,
       });
       // Save or process audioBuffer
@@ -288,10 +284,10 @@ sdk.on("new-message", async (msg) => {
 
 ```typescript
 // Get attachment details
-const attachment = await sdk.attachments.getAttachment("attachment-guid");
+const attachment = await sdk.getAttachment("attachment-guid");
 
 // Get attachment count
-const count = await sdk.attachments.getAttachmentCount();
+const count = await sdk.getAttachmentCount();
 ```
 
 ## Contacts & Handles
@@ -300,36 +296,36 @@ const count = await sdk.attachments.getAttachmentCount();
 
 ```typescript
 // Get all contacts
-const contacts = await sdk.contacts.getContacts();
+const contacts = await sdk.getContacts();
 
 // Get contact card
-const contactCard = await sdk.contacts.getContactCard("+1234567890");
+const contactCard = await sdk.getContactCard("+1234567890");
 
 // Share contact card
-await sdk.contacts.shareContactCard("chat-guid");
+await sdk.shareContactCard("chat-guid");
 
 // Check if should share contact
-const shouldShare = await sdk.contacts.shouldShareContact("chat-guid");
+const shouldShare = await sdk.shouldShareContact("chat-guid");
 ```
 
 ### Handle Operations
 
 ```typescript
 // Query handles
-const result = await sdk.handles.queryHandles({
+const result = await sdk.queryHandles({
   address: "+1234567890",
   with: ["chats"],
   limit: 50,
 });
 
 // Get handle availability
-const isAvailable = await sdk.handles.getHandleAvailability(
+const isAvailable = await sdk.getHandleAvailability(
   "handle-guid",
   "imessage"
 );
 
 // Get focus status
-const focusStatus = await sdk.handles.getHandleFocusStatus("handle-guid");
+const focusStatus = await sdk.getHandleFocusStatus("handle-guid");
 ```
 
 ## Real-time Events
@@ -587,13 +583,48 @@ sdk.off("new-message", messageHandler);
 sdk.removeAllListeners("new-message");
 ```
 
+### Watcher API (high-level listener)
+
+For long-running bots and agents, the watcher API provides a high-level interface that manages connection, filtering, and dispatch for you:
+
+```typescript
+import { IMessageSDK } from "@photon-ai/advanced-imessage-kit";
+
+const sdk = new IMessageSDK({
+  serverUrl: "{your-subdomain}.imsgd.photon.codes",
+  watcher: {
+    // By default, messages sent by yourself are ignored in watcher callbacks
+    excludeOwnMessages: true,
+  },
+});
+
+await sdk.startWatching({
+  onMessage: async (message) => {
+    console.log("Any message:", message.text);
+  },
+  onDirectMessage: async (message) => {
+    console.log("Direct message from:", message.handle?.address);
+  },
+  onGroupMessage: async (message) => {
+    console.log("Group message in:", message.groupTitle ?? message.chats?.[0]?.displayName);
+  },
+  onError: (error) => {
+    console.error("Watcher error:", error);
+  },
+});
+
+// Later, when shutting down your process:
+sdk.stopWatching();
+await sdk.close();
+```
+
 ## Advanced Features
 
 ### FaceTime Integration
 
 ```typescript
 // Create FaceTime link
-const link = await sdk.facetime.createFaceTimeLink();
+const link = await sdk.createFaceTimeLink();
 console.log("FaceTime link:", link);
 
 // Listen for FaceTime status changes
@@ -606,17 +637,17 @@ sdk.on("facetime-status-change", (data) => {
 
 ```typescript
 // Get Find My Friends
-const friends = await sdk.icloud.getFindMyFriends();
+const friends = await sdk.getFindMyFriends();
 
 // Refresh data
-await sdk.icloud.refreshFindMyFriends();
+await sdk.refreshFindMyFriends();
 ```
 
 ### Scheduled Messages
 
 ```typescript
 // Create scheduled message
-const scheduled = await sdk.scheduledMessages.createScheduledMessage({
+const scheduled = await sdk.createScheduledMessage({
   chatGuid: "any;-;+1234567890",
   message: "This message was scheduled!",
   scheduledFor: new Date(Date.now() + 60000), // 1 minute from now
@@ -624,34 +655,85 @@ const scheduled = await sdk.scheduledMessages.createScheduledMessage({
 });
 
 // Get all scheduled messages
-const allScheduled = await sdk.scheduledMessages.getScheduledMessages();
+const allScheduled = await sdk.getScheduledMessages();
 
 // Update scheduled message
-await sdk.scheduledMessages.updateScheduledMessage("schedule-id", {
+await sdk.updateScheduledMessage("schedule-id", {
   message: "Updated message",
 });
 
 // Delete scheduled message
-await sdk.scheduledMessages.deleteScheduledMessage("schedule-id");
+await sdk.deleteScheduledMessage("schedule-id");
 ```
 
 ### Server Information
 
 ```typescript
 // Get server info
-const serverInfo = await sdk.server.getServerInfo();
+const serverInfo = await sdk.getServerInfo();
 
 // Get message statistics
-const stats = await sdk.server.getMessageStats();
+const stats = await sdk.getMessageStats();
 
 // Get server logs
-const logs = await sdk.server.getServerLogs(100);
+const logs = await sdk.getServerLogs(100);
 
 // Get alerts
-const alerts = await sdk.server.getAlerts();
+const alerts = await sdk.getAlerts();
 
 // Mark alerts as read
-await sdk.server.markAlertAsRead(["alert-id-1", "alert-id-2"]);
+await sdk.markAlertsRead(["alert-id-1", "alert-id-2"]);
+
+// Get media statistics (global totals)
+const mediaStats = await sdk.getMediaStatistics();
+
+// Get media statistics grouped by chat
+const mediaByChat = await sdk.getMediaStatisticsByChat();
+```
+
+## Helper Utilities & Bot Patterns
+
+### Unread message aggregation
+
+```typescript
+// Group recent unread messages by sender (address)
+const { groups, total, senderCount } = await sdk.getUnreadMessages();
+
+for (const group of groups) {
+  console.log(`Sender: ${group.sender}, unread: ${group.messages.length}`);
+}
+```
+
+> Note: `getUnreadMessages()` operates on a recent window of messages, not a full database-wide aggregation.
+
+### Batch sending
+
+```typescript
+const results = await sdk.sendBatch([
+  { to: "+1234567890", content: "Hello" },
+  { to: "+1987654321", content: { text: "Hi", files: ["/path/to/file.jpg"] } },
+]);
+
+for (const item of results) {
+  if (item.success) {
+    console.log("Sent to", item.to);
+  } else {
+    console.error("Failed to send to", item.to, item.error);
+  }
+}
+```
+
+### MessageChain helpers
+
+```typescript
+sdk.on("new-message", async (message) => {
+  await sdk
+    .message(message)
+    .ifFromOthers()
+    .matchText(/hello/i)
+    .replyText((m) => `Hi, you said: ${m.text}`)
+    .execute();
+});
 ```
 
 ## Capability Matrix (SDK ↔ Socket Events)
@@ -660,59 +742,61 @@ The following table summarizes the main SDK methods and the underlying Socket.IO
 
 | Domain        | SDK method                                          | Socket event                     | Notes                               |
 |--------------|------------------------------------------------------|----------------------------------|-------------------------------------|
-| Messages      | `sdk.messages.sendMessage`                          | `send-message`                   | Text and simple message sends       |
-| Messages      | `sdk.messages.getMessage`                           | `get-message`                    | Single message with optional `with` |
-| Messages      | `sdk.messages.getMessages`                          | `get-messages`                   | Paginated message list              |
-| Messages      | `sdk.messages.sendReaction`                         | `send-reaction`                  | Tapback / reaction messages         |
-| Messages      | `sdk.messages.editMessage`                          | `edit-message`                   | Message editing (Ventura+)          |
-| Messages      | `sdk.messages.unsendMessage`                        | `unsend-message`                 | Message retraction (Ventura+)       |
-| Chats         | `sdk.chats.getChats`                                | `get-chats`                      | Chat list                           |
-| Chats         | `sdk.chats.getChat`                                 | `get-chat`                       | Single chat                         |
-| Chats         | `sdk.chats.getChatMessages`                         | `get-chat-messages`              | Messages for a chat                 |
-| Chats         | `sdk.chats.createChat`                              | `start-chat`                     | Create chat and optionally send     |
-| Chats         | `sdk.chats.updateChat`                              | `rename-group`                   | Rename group                        |
-| Chats         | `sdk.chats.addParticipant`                          | `add-participant`                | Add group member                    |
-| Chats         | `sdk.chats.removeParticipant`                       | `remove-participant`             | Remove group member                 |
-| Chats         | `sdk.chats.leaveChat`                               | `leave-chat`                     | Leave group                         |
-| Attachments   | `sdk.attachments.sendAttachment`                    | `send-message-chunk`             | Chunked file / audio / sticker send |
-| Attachments   | `sdk.attachments.getAttachment`                     | `get-attachment`                 | Attachment metadata                 |
-| Attachments   | `sdk.attachments.getAttachmentCount`                | `get-attachment-count`           | Total attachments                   |
-| Attachments   | `sdk.attachments.downloadAttachment`                | `get-attachment-chunk`           | Chunked download                    |
-| Attachments   | `sdk.attachments.downloadAttachmentLive`           | `get-live-attachment-chunk`      | Live Photo video component          |
-| Contacts      | `sdk.contacts.getContacts`                          | `get-contacts`                   | Contact list                        |
-| Contacts      | `sdk.contacts.getContactCard`                       | `get-icloud-contact-card`        | iCloud contact card                 |
-| Contacts      | `sdk.contacts.shareContactCard`                     | `share-contact-card`             | Share contact in chat               |
-| Handles       | `sdk.handles.getHandleCount`                        | `get-handle-count`               | Total handles                       |
-| Handles       | `sdk.handles.queryHandles`                          | `query-handles`                  | Handle query with metadata          |
-| Handles       | `sdk.handles.getHandle`                             | `get-handle`                     | Single handle                       |
-| Handles       | `sdk.handles.getHandleAvailability`                | `check-handle-availability`      | iMessage / FaceTime availability    |
-| Handles       | `sdk.handles.getHandleFocusStatus`                | `get-handle-focus-status`        | Focus mode status                   |
-| Find My       | `sdk.icloud.getFindMyFriends`                       | `get-findmy-friends`             | Find My Friends snapshot            |
-| Find My       | `sdk.icloud.refreshFindMyFriends`                   | `refresh-findmy-friends`         | Refresh and cache locations         |
-| FaceTime      | `sdk.facetime.createFaceTimeLink`                   | `start-facetime-session`         | Create FaceTime link                |
-| Scheduled     | `sdk.scheduledMessages.createScheduledMessage`      | `create-scheduled-message`       | Create scheduled message            |
-| Scheduled     | `sdk.scheduledMessages.getScheduledMessages`        | `get-scheduled-messages`         | List scheduled messages             |
-| Scheduled     | `sdk.scheduledMessages.updateScheduledMessage`      | `update-scheduled-message`       | Update scheduled message            |
-| Scheduled     | `sdk.scheduledMessages.deleteScheduledMessage`      | `delete-scheduled-message`       | Delete scheduled message            |
-| Server        | `sdk.server.getServerInfo`                          | `get-server-metadata`            | Basic server info                   |
-| Server        | `sdk.server.getMessageStats`                        | `get-database-totals`            | Message/database totals             |
-| Server        | `sdk.server.getServerLogs`                          | `get-logs`                       | Recent logs                         |
-| Server        | `sdk.server.getAlerts`                              | `get-alerts`                     | Alerts                              |
-| Server        | `sdk.server.markAlertAsRead`                        | `mark-alert-read`                | Mark alerts as read                 |
+| Messages      | `sdk.sendMessage`                                    | `send-message`                   | Text and simple message sends       |
+| Messages      | `sdk.getMessage`                                     | `get-message`                    | Single message with optional `with` |
+| Messages      | `sdk.getMessages`                                    | `get-messages`                   | Paginated message list              |
+| Messages      | `sdk.sendReaction`                                   | `send-reaction`                  | Tapback / reaction messages         |
+| Messages      | `sdk.editMessage`                                    | `edit-message`                   | Message editing (Ventura+)          |
+| Messages      | `sdk.unsendMessage`                                  | `unsend-message`                 | Message retraction (Ventura+)       |
+| Chats         | `sdk.getChats`                                       | `get-chats`                      | Chat list                           |
+| Chats         | `sdk.getChat`                                        | `get-chat`                       | Single chat                         |
+| Chats         | `sdk.getChatMessages`                                | `get-chat-messages`              | Messages for a chat                 |
+| Chats         | `sdk.createChat`                                     | `start-chat`                     | Create chat and optionally send     |
+| Chats         | `sdk.updateChat`                                     | `rename-group`                   | Rename group                        |
+| Chats         | `sdk.addParticipant`                                 | `add-participant`                | Add group member                    |
+| Chats         | `sdk.removeParticipant`                              | `remove-participant`             | Remove group member                 |
+| Chats         | `sdk.leaveChat`                                      | `leave-chat`                     | Leave group                         |
+| Attachments   | `sdk.sendAttachment`                                 | `send-message-chunk`             | Chunked file / audio / sticker send |
+| Attachments   | `sdk.getAttachment`                                  | `get-attachment`                 | Attachment metadata                 |
+| Attachments   | `sdk.getAttachmentCount`                             | `get-attachment-count`           | Total attachments                   |
+| Attachments   | `sdk.downloadAttachment`                             | `get-attachment-chunk`           | Chunked download                    |
+| Attachments   | `sdk.downloadAttachmentLive`                         | `get-live-attachment-chunk`      | Live Photo video component          |
+| Contacts      | `sdk.getContacts`                                    | `get-contacts`                   | Contact list                        |
+| Contacts      | `sdk.getContactCard`                                 | `get-icloud-contact-card`        | iCloud contact card                 |
+| Contacts      | `sdk.shareContactCard`                               | `share-contact-card`             | Share contact in chat               |
+| Handles       | `sdk.getHandleCount`                                 | `get-handle-count`               | Total handles                       |
+| Handles       | `sdk.queryHandles`                                   | `query-handles`                  | Handle query with metadata          |
+| Handles       | `sdk.getHandle`                                      | `get-handle`                     | Single handle                       |
+| Handles       | `sdk.getHandleAvailability`                          | `check-handle-availability`      | iMessage / FaceTime availability    |
+| Handles       | `sdk.getHandleFocusStatus`                           | `get-handle-focus-status`        | Focus mode status                   |
+| Find My       | `sdk.getFindMyFriends`                               | `get-findmy-friends`             | Find My Friends snapshot            |
+| Find My       | `sdk.refreshFindMyFriends`                           | `refresh-findmy-friends`         | Refresh and cache locations         |
+| FaceTime      | `sdk.createFaceTimeLink`                             | `start-facetime-session`         | Create FaceTime link                |
+| Scheduled     | `sdk.createScheduledMessage`                         | `create-scheduled-message`       | Create scheduled message            |
+| Scheduled     | `sdk.getScheduledMessages`                           | `get-scheduled-messages`         | List scheduled messages             |
+| Scheduled     | `sdk.updateScheduledMessage`                         | `update-scheduled-message`       | Update scheduled message            |
+| Scheduled     | `sdk.deleteScheduledMessage`                         | `delete-scheduled-message`       | Delete scheduled message            |
+| Server        | `sdk.getServerInfo`                                  | `get-server-metadata`            | Basic server info                   |
+| Server        | `sdk.getMessageStats`                                | `get-database-totals`            | Message/database totals             |
+| Server        | `sdk.getServerLogs`                                  | `get-logs`                       | Recent logs                         |
+| Server        | `sdk.getAlerts`                                      | `get-alerts`                     | Alerts                              |
+| Server        | `sdk.markAlertsRead`                                 | `mark-alert-read`                | Mark alerts as read                 |
+| Server        | `sdk.getMediaStatistics`                             | `get-media-totals`               | Media totals across all chats       |
+| Server        | `sdk.getMediaStatisticsByChat`                       | `get-media-totals-by-chat`       | Media totals grouped by chat        |
 
 ## Error Handling
 
 ```typescript
 try {
-  await sdk.messages.sendMessage({
+  await sdk.sendMessage({
     chatGuid: "invalid-guid",
     message: "Test",
   });
 } catch (error) {
-  if (error.response?.status === 404) {
-    console.error("Chat not found");
-  } else {
+  if (error instanceof Error) {
     console.error("Send failed:", error.message);
+  } else {
+    console.error("Send failed:", error);
   }
 }
 ```
@@ -720,12 +804,18 @@ try {
 ## Configuration Options
 
 ```typescript
-interface ClientConfig {
-  serverUrl?: string; // Your subdomain: '{your-subdomain}.imsgd.photon.codes'
+interface IMessageConfig {
+  serverUrl: string; // Your subdomain: '{your-subdomain}.imsgd.photon.codes'
   logLevel?: "debug" | "info" | "warn" | "error"; // Default: 'info'
   apiKey?: string; // Required when the server is protected by nexus auth
+  watcher?: {
+    excludeOwnMessages?: boolean; // Default: true, ignore messages sent by self in watcher
+  };
+  plugins?: Plugin[]; // Optional plugin list created via definePlugin(...)
 }
 ```
+
+For TypeScript projects, `Plugin` and the `definePlugin(...)` helper are exported from the SDK so you can author strongly-typed plugins.
 
 ### Using `apiKey` with nexus auth
 
@@ -744,9 +834,9 @@ original authentication/encryption mechanisms instead.
 ### Resource Management
 
 ```typescript
-// Always disconnect when done
+// Always close SDK when done
 process.on("SIGINT", async () => {
-  await sdk.disconnect();
+  await sdk.close();
   process.exit(0);
 });
 ```
@@ -766,7 +856,7 @@ sdk.off("new-message", handleNewMessage);
 
 ```typescript
 // Use pagination for large queries
-const messages = await sdk.messages.getMessages({
+const { messages } = await sdk.getMessages({
   chatGuid: "any;-;+1234567890",
   limit: 100,
   offset: 0,

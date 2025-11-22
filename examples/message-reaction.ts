@@ -11,7 +11,7 @@ async function main() {
             let messageGuid = MESSAGE_GUID;
 
             if (!messageGuid) {
-                const testMessage = await sdk.messages.sendMessage({
+                const testMessage = await sdk.sendMessage({
                     chatGuid: CHAT_GUID,
                     message: "Test message for reactions!",
                 });
@@ -21,7 +21,7 @@ async function main() {
             }
 
             // ❤️ = love
-            await sdk.messages.sendReaction({
+            await sdk.sendReaction({
                 chatGuid: CHAT_GUID,
                 messageGuid,
                 reaction: "love",
@@ -30,7 +30,7 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             // 😂 = laugh
-            await sdk.messages.sendReaction({
+            await sdk.sendReaction({
                 chatGuid: CHAT_GUID,
                 messageGuid,
                 reaction: "laugh",
@@ -39,7 +39,7 @@ async function main() {
             handleError(error, "Failed to send reaction");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

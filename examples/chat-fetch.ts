@@ -1,4 +1,4 @@
-import type { Chat } from "../index";
+import type { ChatSummary } from "../index";
 import { createSDK, handleError } from "./utils";
 
 async function main() {
@@ -6,20 +6,21 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const chats: Chat[] = await sdk.chats.getChats();
+            const chats: ChatSummary[] = await sdk.listChats();
             console.log(`${chats.length} chats\n`);
 
             chats.slice(0, 10).forEach((chat, i) => {
-                const type = "style" in chat && chat.style === 43 ? "group" : "individual";
-                console.log(`${i + 1}. ${chat.displayName || chat.chatIdentifier} (${type})`);
-                console.log(`   ${chat.guid}`);
-                console.log(`   ${chat.participants?.length || 0} people\n`);
+                const type = chat.isGroup ? "group" : "individual";
+                const participants = chat.rawChat.participants?.length || 0;
+                console.log(`${i + 1}. ${chat.displayName || chat.chatGuid} (${type})`);
+                console.log(`   ${chat.chatGuid}`);
+                console.log(`   ${participants} people\n`);
             });
         } catch (error) {
             handleError(error, "Failed to fetch chats");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

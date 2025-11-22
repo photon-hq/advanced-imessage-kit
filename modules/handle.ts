@@ -1,7 +1,7 @@
-import type { AdvancedIMessageKit } from "../mobai";
+import type { RemoteClient } from "../remoteClient";
 
 export class HandleModule {
-    constructor(private readonly sdk: AdvancedIMessageKit) {}
+    constructor(private readonly sdk: RemoteClient) {}
 
     async getHandleCount(): Promise<number> {
         const res = await this.sdk.request("get-handle-count");

@@ -5,7 +5,7 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const contacts = await sdk.contacts.getContacts();
+            const contacts = await sdk.getContacts();
             console.log(`${contacts.length} contacts\n`);
 
             contacts.slice(0, 10).forEach((contact, i) => {
@@ -24,7 +24,7 @@ async function main() {
             handleError(error, "Failed to fetch contacts");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

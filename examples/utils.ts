@@ -1,18 +1,20 @@
-import { type ClientConfig, SDK } from "../index";
-import type { AdvancedIMessageKit } from "../mobai";
+import { IMessageSDK, type IMessageConfig } from "../index";
 
-export function createSDK(config: ClientConfig = {}) {
-    return SDK({
-        serverUrl: config.serverUrl ?? "http://localhost:1234",
-        logLevel: config.logLevel ?? "info",
-        ...config,
+type LocalConfig = Omit<IMessageConfig, "serverUrl"> & { serverUrl?: string };
+
+export function createSDK(config: LocalConfig = {}): IMessageSDK {
+    const { serverUrl = "http://localhost:1234", ...rest } = config;
+
+    return new IMessageSDK({
+        serverUrl,
+        ...rest,
     });
 }
 
-export function handleExit(sdk: AdvancedIMessageKit): void {
+export function handleExit(sdk: IMessageSDK): void {
     const shutdown = async () => {
         console.log("\nShutting down...");
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     };
 

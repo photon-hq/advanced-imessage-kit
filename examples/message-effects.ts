@@ -12,7 +12,7 @@ async function main() {
 
         try {
             console.log("Sending message with confetti effect 🎉");
-            const confettiMessage = await sdk.messages.sendMessage({
+            const confettiMessage = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "Happy Birthday! 🎂",
                 effectId: MESSAGE_EFFECTS.confetti,
@@ -22,7 +22,7 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.log("Sending message with fireworks effect 🎆");
-            const fireworksMessage = await sdk.messages.sendMessage({
+            const fireworksMessage = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "Celebration time! 🎊",
                 effectId: MESSAGE_EFFECTS.fireworks,
@@ -32,7 +32,7 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.log("Sending message with balloons effect 🎈");
-            const balloonsMessage = await sdk.messages.sendMessage({
+            const balloonsMessage = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "Congratulations! 🥳",
                 effectId: MESSAGE_EFFECTS.balloons,
@@ -42,7 +42,7 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.log("Sending message with invisible ink effect 🕵️");
-            const invisibleMessage = await sdk.messages.sendMessage({
+            const invisibleMessage = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "Secret message! 🤫",
                 effectId: MESSAGE_EFFECTS.invisible_ink,
@@ -52,7 +52,7 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.log("Sending message with loud/slam effect 💥");
-            const loudMessage = await sdk.messages.sendMessage({
+            const loudMessage = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "IMPORTANT MESSAGE!",
                 effectId: MESSAGE_EFFECTS.loud,
@@ -66,7 +66,7 @@ async function main() {
             console.log("\n⚠️  Make sure Private API is enabled on the server to use effects!");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

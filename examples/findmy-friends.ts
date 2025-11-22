@@ -5,7 +5,7 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const friends = await sdk.icloud.getFindMyFriends();
+            const friends = await sdk.getFindMyFriends();
 
             if (friends?.length) {
                 console.log(`${friends.length} friends\n`);
@@ -30,7 +30,7 @@ async function main() {
             handleError(error, "Failed to fetch Find My data");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

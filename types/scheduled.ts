@@ -13,7 +13,6 @@ export interface ScheduledMessageSchedule {
 }
 
 export interface ScheduledMessagePayload extends SendMessageOptions {
-    method?: "apple-script" | "private-api";
     ddScan?: boolean;
 }
 

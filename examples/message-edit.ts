@@ -7,7 +7,7 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const message = await sdk.messages.sendMessage({
+            const message = await sdk.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "This is the original messge with a typo!",
             });
@@ -16,7 +16,7 @@ async function main() {
 
             await new Promise((resolve) => setTimeout(resolve, 5000));
 
-            const edited = await sdk.messages.editMessage({
+            const edited = await sdk.editMessage({
                 messageGuid: message.guid,
                 editedMessage: "This is the original message with a typo! (Fixed)",
             });
@@ -27,7 +27,7 @@ async function main() {
             handleError(error, "Failed to edit message");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

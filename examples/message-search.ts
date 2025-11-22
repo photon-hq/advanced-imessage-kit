@@ -7,7 +7,7 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const messages = await sdk.messages.getMessages({
+            const { messages } = await sdk.getMessages({
                 chatGuid: CHAT_GUID,
                 limit: 20,
             });
@@ -24,7 +24,7 @@ async function main() {
             handleError(error, "Failed to search messages");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

@@ -8,27 +8,24 @@ async function main() {
     sdk.on("ready", async () => {
         try {
             console.log(`starting typing for ${CHAT_GUID}`);
-            await sdk.chats.startTyping(CHAT_GUID);
+            await sdk.startTyping(CHAT_GUID);
 
             await new Promise((resolve) => setTimeout(resolve, 3000));
 
-            await sdk.messages.sendMessage({
-                chatGuid: CHAT_GUID,
-                message: "Hello! I was typing for a moment 😊",
-            });
+            await sdk.send(CHAT_GUID, "Hello! I was typing for a moment 😊");
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            await sdk.chats.startTyping(CHAT_GUID);
+            await sdk.startTyping(CHAT_GUID);
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            await sdk.chats.stopTyping(CHAT_GUID);
+            await sdk.stopTyping(CHAT_GUID);
         } catch (error) {
             handleError(error, "Typing indicator demo failed");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

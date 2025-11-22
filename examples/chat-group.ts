@@ -20,22 +20,22 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const allChats = await sdk.chats.getChats();
-            const groups = allChats.filter((chat) => "style" in chat && chat.style === 43);
+            const groups = await sdk.listChats({ type: "group" });
 
             console.log(`got ${groups.length} groups\n`);
 
             groups.forEach((group, i) => {
-                console.log(`${i + 1}. ${group.displayName || group.chatIdentifier}`);
-                console.log(`   guid: ${group.guid}`);
-                console.log(`   people: ${group.participants?.length || 0}`);
+                const participants = group.rawChat.participants?.length || 0;
+                console.log(`${i + 1}. ${group.displayName || group.chatGuid}`);
+                console.log(`   guid: ${group.chatGuid}`);
+                console.log(`   people: ${participants}`);
 
-                if (group.participants?.length) {
-                    group.participants.slice(0, 3).forEach((p) => {
+                if (group.rawChat.participants?.length) {
+                    group.rawChat.participants.slice(0, 3).forEach((p) => {
                         console.log(`     ${p.address}`);
                     });
-                    if (group.participants.length > 3) {
-                        console.log(`     ... and ${group.participants.length - 3} more`);
+                    if (group.rawChat.participants.length > 3) {
+                        console.log(`     ... and ${group.rawChat.participants.length - 3} more`);
                     }
                 }
                 console.log();

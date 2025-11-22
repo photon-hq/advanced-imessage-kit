@@ -5,7 +5,7 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const stats = await sdk.server.getMessageStats();
+            const stats = await sdk.getMessageStats();
 
             console.log(`${stats.total.toLocaleString()} total`);
             console.log(`${stats.sent.toLocaleString()} sent / ${stats.received.toLocaleString()} received`);
@@ -19,7 +19,7 @@ async function main() {
             handleError(error, "Failed to get statistics");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

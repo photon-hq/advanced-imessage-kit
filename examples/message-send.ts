@@ -5,24 +5,21 @@ const CHAT_GUID = process.env.CHAT_GUID || "any;-;+1234567890";
 async function main() {
     const sdk = createSDK();
 
-    sdk.on("ready", async () => {
-        try {
-            const message = await sdk.messages.sendMessage({
-                chatGuid: CHAT_GUID,
-                message: "Hello from MOBAI!",
-            });
+    try {
+        await sdk.connect();
 
-            console.log(`sent: ${message.guid}`);
-            console.log(`${new Date(message.dateCreated).toLocaleString()}`);
-        } catch (error) {
-            handleError(error, "Failed to send message");
+        const result = await sdk.send(CHAT_GUID, "Hello from MOBAI!");
+
+        console.log(`sent at: ${result.sentAt.toLocaleString()}`);
+        if (result.message) {
+            console.log(`guid: ${result.message.guid}`);
         }
-
-        await sdk.disconnect();
+    } catch (error) {
+        handleError(error, "Failed to send message");
+    } finally {
+        await sdk.close();
         process.exit(0);
-    });
-
-    await sdk.connect();
+    }
 }
 
 main().catch(console.error);

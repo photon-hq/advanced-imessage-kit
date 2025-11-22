@@ -5,13 +5,13 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const link = await sdk.facetime.createFaceTimeLink();
+            const link = await sdk.createFaceTimeLink();
             console.log(`${link}`);
         } catch (error) {
             handleError(error, "Failed to create FaceTime link");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

@@ -5,22 +5,21 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const chatList = await sdk.chats.getChats();
+            const chatList = await sdk.listChats();
             console.log(`${chatList.length} chats:`);
             chatList.slice(0, 10).forEach((chat, i) => {
-                console.log(`  ${i + 1}. ${chat.displayName || chat.chatIdentifier}`);
+                console.log(`  ${i + 1}. ${chat.displayName || chat.chatGuid}`);
             });
 
             if (chatList.length > 0) {
                 const chat = chatList[0];
                 if (chat) {
-                    console.log(
-                        `\n${chat.displayName || chat.chatIdentifier} (${chat.participants?.length || 0} people)`,
-                    );
+                    const participants = chat.rawChat.participants?.length || 0;
+                    console.log(`\n${chat.displayName || chat.chatGuid} (${participants} people)`);
                 }
             }
 
-            const serverInfo = await sdk.server.getServerInfo();
+            const serverInfo = await sdk.getServerInfo();
             console.log(`\n${JSON.stringify(serverInfo, null, 2)}`);
         } catch (error) {
             handleError(error, "Setup failed");

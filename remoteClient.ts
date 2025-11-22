@@ -29,7 +29,7 @@ import {
 } from "./events";
 import type { ClientConfig, SocketEventMap } from "./types";
 
-export interface SDKErrorResponse {
+export interface RemoteErrorResponse {
     status?: number;
     message?: string;
     error?: {
@@ -40,36 +40,39 @@ export interface SDKErrorResponse {
     encrypted?: boolean;
 }
 
-export class SDKError extends Error {
+export class RemoteError extends Error {
     public readonly event: string;
-    public readonly response?: SDKErrorResponse;
+    public readonly response?: RemoteErrorResponse;
 
-    constructor(message: string, event: string, response?: SDKErrorResponse) {
+    constructor(message: string, event: string, response?: RemoteErrorResponse) {
         super(message);
-        this.name = "SDKError";
+        this.name = "RemoteError";
         this.event = event;
         this.response = response;
     }
 }
 
-export class AdvancedIMessageKit extends EventEmitter {
-    private static getGlobalSdk = (): AdvancedIMessageKit | null => (globalThis as any).__AdvancedIMessageKit__ ?? null;
-    private static setGlobalSdk = (sdk: AdvancedIMessageKit) => {
-        (globalThis as any).__AdvancedIMessageKit__ = sdk;
+/**
+ * Remote socket client used internally by IMessageSDK.
+ */
+export class RemoteClient extends EventEmitter {
+    private static getGlobalClient = (): RemoteClient | null => (globalThis as any).__RemoteClient__ ?? null;
+    private static setGlobalClient = (client: RemoteClient) => {
+        (globalThis as any).__RemoteClient__ = client;
     };
 
-    public static getInstance(config?: ClientConfig): AdvancedIMessageKit {
-        const existing = AdvancedIMessageKit.getGlobalSdk();
+    public static getInstance(config?: ClientConfig): RemoteClient {
+        const existing = RemoteClient.getGlobalClient();
         if (existing) return existing;
 
-        const instance = new AdvancedIMessageKit(config);
-        AdvancedIMessageKit.setGlobalSdk(instance);
+        const instance = new RemoteClient(config);
+        RemoteClient.setGlobalClient(instance);
         return instance;
     }
 
     // Core
     public readonly config: ClientConfig;
-    public readonly logger = getLogger("AdvancedIMessageKit");
+    public readonly logger = getLogger("RemoteClient");
     public readonly socket: ReturnType<typeof io>;
 
     public readonly attachments: AttachmentModule;
@@ -162,7 +165,7 @@ export class AdvancedIMessageKit extends EventEmitter {
                 // Let's allow it to queue internally by socket.io if possible, but socket.io usually buffers.
             }
 
-            this.socket.emit(event, data, (response: SDKErrorResponse | undefined) => {
+            this.socket.emit(event, data, (response: RemoteErrorResponse | undefined) => {
                 clearTimeout(timeoutId);
 
                 // Standardize response handling based on the server's ResponseJson structure
@@ -172,7 +175,7 @@ export class AdvancedIMessageKit extends EventEmitter {
                 }
 
                 const errorMsg = response?.error?.message || response?.message || "Unknown server error";
-                reject(new SDKError(errorMsg, event, response));
+                reject(new RemoteError(errorMsg, event, response));
             });
         });
     }
@@ -267,5 +270,3 @@ export class AdvancedIMessageKit extends EventEmitter {
         return this.processedMessages.size;
     }
 }
-
-export const SDK = AdvancedIMessageKit.getInstance;

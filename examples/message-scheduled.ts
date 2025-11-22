@@ -9,7 +9,7 @@ async function main() {
         try {
             const fiveMinutesFromNow = new Date(Date.now() + 5 * 60 * 1000);
 
-            const scheduled = await sdk.scheduledMessages.createScheduledMessage({
+            const scheduled = await sdk.createScheduledMessage({
                 chatGuid: CHAT_GUID,
                 message: "This message was scheduled!",
                 scheduledFor: fiveMinutesFromNow,
@@ -22,7 +22,7 @@ async function main() {
             tomorrow9AM.setDate(tomorrow9AM.getDate() + 1);
             tomorrow9AM.setHours(9, 0, 0, 0);
 
-            const recurring = await sdk.scheduledMessages.createScheduledMessage({
+            const recurring = await sdk.createScheduledMessage({
                 chatGuid: CHAT_GUID,
                 message: "Good morning!",
                 scheduledFor: tomorrow9AM,
@@ -35,7 +35,7 @@ async function main() {
 
             console.log(`recurring: ${recurring.id}`);
 
-            const allScheduled = await sdk.scheduledMessages.getScheduledMessages();
+            const allScheduled = await sdk.getScheduledMessages();
             console.log(`${allScheduled.length} scheduled\n`);
 
             allScheduled.forEach((msg, i) => {
@@ -48,7 +48,7 @@ async function main() {
                 if (!msg) return;
                 const newTime = new Date(Date.now() + 10 * 60 * 1000);
 
-                const updated = await sdk.scheduledMessages.updateScheduledMessage(msg.id, {
+                const updated = await sdk.updateScheduledMessage(msg.id, {
                     ...msg.payload,
                     message: "Updated message!",
                     scheduledFor: newTime,
@@ -61,7 +61,7 @@ async function main() {
             handleError(error, "Failed to manage scheduled messages");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
-import type { AdvancedIMessageKit } from "../mobai";
+import type { RemoteClient } from "../remoteClient";
 import type { Message } from "../interfaces";
 import type { SendMessageOptions, ValidRemoveTapback, ValidTapback } from "../types";
 import type { SocketEventMap } from "../types";
 
 export class MessageModule {
-    constructor(private readonly sdk: AdvancedIMessageKit) {}
+    constructor(private readonly sdk: RemoteClient) {}
 
     async sendMessage(options: SendMessageOptions): Promise<Message> {
         const tempGuid = options.tempGuid ?? randomUUID();

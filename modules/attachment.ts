@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import type { AdvancedIMessageKit } from "../mobai";
+import type { RemoteClient } from "../remoteClient";
 import type { SendAttachmentOptions, SendStickerOptions, QueuedAttachmentResult, SocketEventMap } from "../types";
 import * as base64 from "byte-base64";
 
 export class AttachmentModule {
-    constructor(private readonly sdk: AdvancedIMessageKit) {}
+    constructor(private readonly sdk: RemoteClient) {}
 
     async getAttachmentCount(): Promise<number> {
         const res = await this.sdk.request<SocketEventMap["get-attachment-count"]["res"]>("get-attachment-count");
@@ -156,7 +156,7 @@ export class AttachmentModule {
 
     async sendSticker(options: SendStickerOptions): Promise<QueuedAttachmentResult> {
         if (!options.filePath) {
-             throw new Error("filePath is required for sendSticker helper");
+            throw new Error("filePath is required for sendSticker helper");
         }
         return this.sendAttachment({
             chatGuid: options.chatGuid,
