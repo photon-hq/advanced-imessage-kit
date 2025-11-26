@@ -21,6 +21,9 @@ async function main() {
     sdk.on("ready", async () => {
         try {
             const allChats = await sdk.chats.getChats();
+
+            // list all group chats
+            // style 43 = group chat, style 45 = 1-on-1 chat
             const groups = allChats.filter((chat) => "style" in chat && chat.style === 43);
 
             console.log(`got ${groups.length} groups\n`);
