@@ -57,3 +57,41 @@ export interface PhotonEventMap {
 }
 
 export type PhotonEventName = keyof PhotonEventMap;
+
+export interface TypedEventEmitter {
+    emit<K extends keyof PhotonEventMap>(
+        event: K,
+        ...args: PhotonEventMap[K] extends undefined ? [] : [PhotonEventMap[K]]
+    ): boolean;
+    emit(event: string | symbol, ...args: unknown[]): boolean;
+
+    on<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    on(event: string | symbol, listener: (...args: unknown[]) => void): this;
+
+    once<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    once(event: string | symbol, listener: (...args: unknown[]) => void): this;
+
+    off<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    off(event: string | symbol, listener: (...args: unknown[]) => void): this;
+
+    addListener<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    addListener(event: string | symbol, listener: (...args: unknown[]) => void): this;
+
+    removeListener<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    removeListener(event: string | symbol, listener: (...args: unknown[]) => void): this;
+}
