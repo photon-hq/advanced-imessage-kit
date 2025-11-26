@@ -57,16 +57,15 @@ async function main() {
         process.exit(0);
     });
 
-    sdk.on("findmy-location-update", (data: unknown) => {
-        const { name, friendId, location } = data as {
-            name?: string;
-            friendId?: string;
-            location?: { latitude?: number; longitude?: number };
-        };
-        console.log(`\n${name || friendId}`);
-        if (location) {
-            console.log(`  ${location.latitude}, ${location.longitude}`);
-        }
+    sdk.on("new-findmy-location", (data) => {
+        const handle = data.handle || "Unknown";
+        const [latitude, longitude] = data.coordinates;
+        const address = data.short_address || data.long_address || "No address";
+
+        console.log(`\nUpdate for ${handle}`);
+        console.log(`  Location: ${latitude}, ${longitude}`);
+        console.log(`  Address: ${address}`);
+        console.log(`  Status: ${data.status}`);
     });
 
     await sdk.connect();

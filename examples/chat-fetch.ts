@@ -1,4 +1,4 @@
-import type { Chat } from "../index";
+import type { ChatResponse } from "../index";
 import { createSDK, handleError } from "./utils";
 
 async function main() {
@@ -6,7 +6,7 @@ async function main() {
 
     sdk.on("ready", async () => {
         try {
-            const chats: Chat[] = await sdk.chats.getChats();
+            const chats: ChatResponse[] = await sdk.chats.getChats();
             console.log(`${chats.length} chats\n`);
 
             chats.slice(0, 10).forEach((chat, i) => {
