@@ -14,9 +14,47 @@ import {
     ScheduledMessageModule,
     ServerModule,
 } from "./modules";
-import type { ClientConfig } from "./types";
+import type { ClientConfig, PhotonEventMap } from "./types";
 
-export class AdvancedIMessageKit extends EventEmitter {
+export interface TypedEventEmitter {
+    emit<K extends keyof PhotonEventMap>(
+        event: K,
+        ...args: PhotonEventMap[K] extends undefined ? [] : [PhotonEventMap[K]]
+    ): boolean;
+    emit(event: string | symbol, ...args: unknown[]): boolean;
+
+    on<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    on(event: string | symbol, listener: (...args: unknown[]) => void): this;
+
+    once<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    once(event: string | symbol, listener: (...args: unknown[]) => void): this;
+
+    off<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    off(event: string | symbol, listener: (...args: unknown[]) => void): this;
+
+    addListener<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    addListener(event: string | symbol, listener: (...args: unknown[]) => void): this;
+
+    removeListener<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    removeListener(event: string | symbol, listener: (...args: unknown[]) => void): this;
+}
+
+export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitter {
     private static getGlobalSdk = (): AdvancedIMessageKit | null => (globalThis as any).__AdvancedIMessageKit__ ?? null;
     private static setGlobalSdk = (sdk: AdvancedIMessageKit) => {
         (globalThis as any).__AdvancedIMessageKit__ = sdk;
@@ -107,8 +145,56 @@ export class AdvancedIMessageKit extends EventEmitter {
         this.server = new ServerModule(this.http);
     }
 
+    override emit<K extends keyof PhotonEventMap>(
+        event: K,
+        ...args: PhotonEventMap[K] extends undefined ? [] : [PhotonEventMap[K]]
+    ): boolean;
+    override emit(event: string | symbol, ...args: unknown[]): boolean {
+        return super.emit(event, ...(args as [unknown, ...unknown[]]));
+    }
+
+    override on<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    override on(event: string | symbol, listener: (...args: unknown[]) => void): this {
+        return super.on(event, listener as (...args: unknown[]) => void);
+    }
+
+    override once<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    override once(event: string | symbol, listener: (...args: unknown[]) => void): this {
+        return super.once(event, listener as (...args: unknown[]) => void);
+    }
+
+    override off<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    override off(event: string | symbol, listener: (...args: unknown[]) => void): this {
+        return super.off(event, listener as (...args: unknown[]) => void);
+    }
+
+    override addListener<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    override addListener(event: string | symbol, listener: (...args: unknown[]) => void): this {
+        return super.addListener(event, listener as (...args: unknown[]) => void);
+    }
+
+    override removeListener<K extends keyof PhotonEventMap>(
+        event: K,
+        listener: PhotonEventMap[K] extends undefined ? () => void : (data: PhotonEventMap[K]) => void,
+    ): this;
+    override removeListener(event: string | symbol, listener: (...args: unknown[]) => void): this {
+        return super.removeListener(event, listener as (...args: unknown[]) => void);
+    }
+
     async connect() {
-        const serverEvents = [
+        const serverEvents: (keyof PhotonEventMap)[] = [
             "new-message",
             "message-updated",
             "updated-message",
@@ -122,10 +208,13 @@ export class AdvancedIMessageKit extends EventEmitter {
             "message-send-error",
             "typing-indicator",
             "new-server",
+            "incoming-facetime",
+            "ft-call-status-changed",
+            "hello-world",
         ];
 
         for (const eventName of serverEvents) {
-            this.socket.on(eventName, (...args: any[]) => {
+            this.socket.on(eventName, (...args: unknown[]) => {
                 // Message deduplication logic
                 //
                 // Problem: When Socket.IO connection is unstable (especially with polling transport),
@@ -134,7 +223,7 @@ export class AdvancedIMessageKit extends EventEmitter {
                 //
                 // Solution: Use GUID as unique identifier for deduplication
                 if (eventName === "new-message" && args.length > 0) {
-                    const message = args[0];
+                    const message = args[0] as { guid?: string };
                     if (message?.guid) {
                         // Check if this message has already been processed
                         if (this.processedMessages.has(message.guid)) {
@@ -146,7 +235,11 @@ export class AdvancedIMessageKit extends EventEmitter {
                     }
                 }
 
-                this.emit(eventName, ...args);
+                if (args.length > 0) {
+                    super.emit(eventName, args[0]);
+                } else {
+                    super.emit(eventName);
+                }
             });
         }
 

@@ -2,13 +2,19 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AxiosInstance } from "axios";
 import FormData from "form-data";
-import type { Chat, Message } from "../interfaces";
+import type { ChatResponse, MessageResponse } from "../types";
 
 export class ChatModule {
     constructor(private readonly http: AxiosInstance) {}
 
-    async getChats(): Promise<Chat[]> {
-        const response = await this.http.post("/api/v1/chat/query", {});
+    async getChats(options?: {
+        withLastMessage?: boolean;
+        withArchived?: boolean;
+        offset?: number;
+        limit?: number;
+        sort?: string;
+    }): Promise<ChatResponse[]> {
+        const response = await this.http.post("/api/v1/chat/query", options ?? {});
         return response.data.data;
     }
 
@@ -21,19 +27,19 @@ export class ChatModule {
         subject?: string;
         effectId?: string;
         attributedBody?: Record<string, unknown>;
-    }): Promise<Chat> {
+    }): Promise<ChatResponse> {
         const response = await this.http.post("/api/v1/chat/new", options);
         return response.data.data;
     }
 
-    async getChat(guid: string, options?: { with?: string[] }): Promise<Chat> {
+    async getChat(guid: string, options?: { with?: string[] }): Promise<ChatResponse> {
         const response = await this.http.get(`/api/v1/chat/${guid}`, {
             params: options?.with ? { with: options.with.join(",") } : {},
         });
         return response.data.data;
     }
 
-    async updateChat(guid: string, options: { displayName?: string }): Promise<Chat> {
+    async updateChat(guid: string, options: { displayName?: string }): Promise<ChatResponse> {
         const response = await this.http.put(`/api/v1/chat/${guid}`, options);
         return response.data.data;
     }
@@ -54,14 +60,14 @@ export class ChatModule {
         await this.http.post(`/api/v1/chat/${guid}/leave`);
     }
 
-    async addParticipant(chatGuid: string, address: string): Promise<Chat> {
+    async addParticipant(chatGuid: string, address: string): Promise<ChatResponse> {
         const response = await this.http.post(`/api/v1/chat/${chatGuid}/participant`, {
             address,
         });
         return response.data.data;
     }
 
-    async removeParticipant(chatGuid: string, address: string): Promise<Chat> {
+    async removeParticipant(chatGuid: string, address: string): Promise<ChatResponse> {
         const response = await this.http.delete(`/api/v1/chat/${chatGuid}/participant`, {
             data: { address },
         });
@@ -78,8 +84,8 @@ export class ChatModule {
             after?: number;
             with?: string[];
         },
-    ): Promise<Message[]> {
-        const params: Record<string, any> = {};
+    ): Promise<MessageResponse[]> {
+        const params: Record<string, unknown> = {};
         if (options?.offset !== undefined) params.offset = options.offset;
         if (options?.limit !== undefined) params.limit = options.limit;
         if (options?.sort) params.sort = options.sort;

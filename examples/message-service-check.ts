@@ -1,4 +1,3 @@
-import type { Message } from "../interfaces";
 import { createSDK, handleExit } from "./utils";
 
 async function main() {
@@ -8,10 +7,10 @@ async function main() {
         console.log("Monitoring messages for service type\n");
     });
 
-    sdk.on("new-message", (message: Message) => {
+    sdk.on("new-message", (message) => {
         if (message.isFromMe) return;
 
-        const service = message.service || message.chats?.[0]?.guid?.split(";")[0] || "Unknown";
+        const service = message.chats?.[0]?.guid?.split(";")[0] || "Unknown";
         const isIMessage = service === "iMessage";
         const icon = isIMessage ? "💙" : service === "SMS" ? "💚" : "❓";
 

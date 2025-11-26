@@ -11,3 +11,15 @@ export interface ServerMetadataResponse {
     local_ipv6s?: string[];
     computer_id?: string;
 }
+
+export interface ServerUpdateData {
+    version: string;
+    releaseDate?: string;
+    releaseNotes?: string;
+}
+
+export interface BackupData {
+    name: string;
+    path?: string;
+    createdAt?: number;
+}

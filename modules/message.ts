@@ -1,12 +1,11 @@
 import { randomUUID } from "node:crypto";
 import type { AxiosInstance } from "axios";
-import type { Message } from "../interfaces";
-import type { SendMessageOptions } from "../types";
+import type { MessageResponse, SendMessageOptions } from "../types";
 
 export class MessageModule {
     constructor(private readonly http: AxiosInstance) {}
 
-    async sendMessage(options: SendMessageOptions): Promise<Message> {
+    async sendMessage(options: SendMessageOptions): Promise<MessageResponse> {
         const payload = {
             ...options,
             tempGuid: options.tempGuid || randomUUID(),
@@ -15,15 +14,23 @@ export class MessageModule {
         return response.data.data;
     }
 
-    async getMessage(guid: string, options?: { with?: string[] }): Promise<Message> {
+    async getMessage(guid: string, options?: { with?: string[] }): Promise<MessageResponse> {
         const response = await this.http.get(`/api/v1/message/${guid}`, {
             params: options?.with ? { with: options.with.join(",") } : {},
         });
         return response.data.data;
     }
 
-    async getMessages(options: any): Promise<Message[]> {
-        const response = await this.http.post("/api/v1/message/query", options);
+    async getMessages(options?: {
+        chatGuid?: string;
+        offset?: number;
+        limit?: number;
+        sort?: "ASC" | "DESC";
+        before?: number;
+        after?: number;
+        with?: string[];
+    }): Promise<MessageResponse[]> {
+        const response = await this.http.post("/api/v1/message/query", options ?? {});
         return response.data.data;
     }
 
@@ -34,7 +41,7 @@ export class MessageModule {
         minRowId?: number;
         maxRowId?: number;
     }): Promise<number> {
-        const params: Record<string, any> = {};
+        const params: Record<string, unknown> = {};
         if (options?.after !== undefined) params.after = options.after;
         if (options?.before !== undefined) params.before = options.before;
         if (options?.chatGuid) params.chatGuid = options.chatGuid;
@@ -52,7 +59,7 @@ export class MessageModule {
         minRowId?: number;
         maxRowId?: number;
     }): Promise<number> {
-        const params: Record<string, any> = {};
+        const params: Record<string, unknown> = {};
         if (options?.after !== undefined) params.after = options.after;
         if (options?.before !== undefined) params.before = options.before;
         if (options?.chatGuid) params.chatGuid = options.chatGuid;
@@ -72,7 +79,7 @@ export class MessageModule {
         minRowId?: number;
         maxRowId?: number;
     }): Promise<number> {
-        const params: Record<string, any> = {};
+        const params: Record<string, unknown> = {};
         if (options?.after !== undefined) params.after = options.after;
         if (options?.before !== undefined) params.before = options.before;
         if (options?.chatGuid) params.chatGuid = options.chatGuid;
@@ -90,7 +97,7 @@ export class MessageModule {
         editedMessage: string;
         backwardsCompatibilityMessage?: string;
         partIndex?: number;
-    }): Promise<Message> {
+    }): Promise<MessageResponse> {
         const response = await this.http.post(`/api/v1/message/${options.messageGuid}/edit`, {
             editedMessage: options.editedMessage,
             backwardsCompatibilityMessage: options.backwardsCompatibilityMessage || options.editedMessage,
@@ -104,7 +111,7 @@ export class MessageModule {
         messageGuid: string;
         reaction: string;
         partIndex?: number;
-    }): Promise<Message> {
+    }): Promise<MessageResponse> {
         const response = await this.http.post("/api/v1/message/react", {
             chatGuid: options.chatGuid,
             selectedMessageGuid: options.messageGuid,
@@ -114,7 +121,7 @@ export class MessageModule {
         return response.data.data;
     }
 
-    async unsendMessage(options: { messageGuid: string; partIndex?: number }): Promise<Message> {
+    async unsendMessage(options: { messageGuid: string; partIndex?: number }): Promise<MessageResponse> {
         const response = await this.http.post(`/api/v1/message/${options.messageGuid}/unsend`, {
             partIndex: options.partIndex ?? 0,
         });
@@ -125,8 +132,25 @@ export class MessageModule {
         await this.http.post(`/api/v1/message/${guid}/notify`);
     }
 
-    async getEmbeddedMedia(guid: string): Promise<any> {
+    async getEmbeddedMedia(guid: string): Promise<{
+        path?: string;
+        data?: string;
+    }> {
         const response = await this.http.get(`/api/v1/message/${guid}/embedded-media`);
+        return response.data.data;
+    }
+
+    async searchMessages(options: {
+        query: string;
+        chatGuid?: string;
+        offset?: number;
+        limit?: number;
+        sort?: "ASC" | "DESC";
+        before?: number;
+        after?: number;
+        matchType?: "contains" | "exact";
+    }): Promise<MessageResponse[]> {
+        const response = await this.http.post("/api/v1/message/search", options);
         return response.data.data;
     }
 }

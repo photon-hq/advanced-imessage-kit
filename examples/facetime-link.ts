@@ -15,9 +15,9 @@ async function main() {
         process.exit(0);
     });
 
-    sdk.on("facetime-status-change", (data: unknown) => {
-        const { callUuid, status } = data as { callUuid?: string; status?: string };
-        console.log(`\n${status} (${callUuid})`);
+    sdk.on("ft-call-status-changed", (data) => {
+        const { uuid, status } = data;
+        console.log(`\n${status} (${uuid})`);
     });
 
     await sdk.connect();

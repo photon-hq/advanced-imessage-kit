@@ -27,7 +27,7 @@ async function autoReplyHeyTest() {
         console.log("✅ SDK ready, auto-reply function started!");
     });
 
-    sdk.on("new-message", async (message: any) => {
+    sdk.on("new-message", async (message) => {
         console.log("📨 Received new message:");
         console.log("  Sender:", message.handle?.address || "Unknown");
         console.log("  Content:", message.text || message.attributedBody || "No text");
@@ -36,24 +36,27 @@ async function autoReplyHeyTest() {
 
         // If the message is not from me, send an auto-reply
         if (!message.isFromMe && message.chats && message.chats.length > 0) {
-            const chatGuid = message.chats[0].guid;
-            console.log("🤖 Preparing to send auto-reply to chat:", chatGuid);
+            const chat = message.chats[0];
+            if (chat) {
+                const chatGuid = chat.guid;
+                console.log("🤖 Preparing to send auto-reply to chat:", chatGuid);
 
-            try {
-                // Get original message content
-                const originalMessage = message.text || message.attributedBody?.[0]?.string || "No text";
+                try {
+                    // Get original message content
+                    const originalMessage = message.text || message.attributedBody?.[0]?.string || "No text";
 
-                // Send auto-reply: Hey! + original message
-                const replyMessage = `Hey！${originalMessage}`;
+                    // Send auto-reply: Hey! + original message
+                    const replyMessage = `Hey！${originalMessage}`;
 
-                const response = await sdk.messages.sendMessage({
-                    chatGuid: chatGuid,
-                    message: replyMessage,
-                });
+                    const response = await sdk.messages.sendMessage({
+                        chatGuid: chatGuid,
+                        message: replyMessage,
+                    });
 
-                console.log("✅ Auto-reply sent successfully:", response);
-            } catch (error) {
-                console.error("❌ Auto-reply failed to send:", error);
+                    console.log("✅ Auto-reply sent successfully:", response);
+                } catch (error) {
+                    console.error("❌ Auto-reply failed to send:", error);
+                }
             }
         } else if (message.isFromMe) {
             console.log("⏭️  Skipping message sent by me");

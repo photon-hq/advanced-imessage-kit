@@ -3,8 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AxiosInstance } from "axios";
 import FormData from "form-data";
-import type { Message } from "../interfaces";
-import type { SendAttachmentOptions, SendStickerOptions } from "../types";
+import type { AttachmentResponse, MessageResponse, SendAttachmentOptions, SendStickerOptions } from "../types";
 
 export class AttachmentModule {
     constructor(private readonly http: AxiosInstance) {}
@@ -14,7 +13,7 @@ export class AttachmentModule {
         return response.data.data.total;
     }
 
-    async getAttachment(guid: string): Promise<any> {
+    async getAttachment(guid: string): Promise<AttachmentResponse> {
         const response = await this.http.get(`/api/v1/attachment/${guid}`);
         return response.data.data;
     }
@@ -29,7 +28,7 @@ export class AttachmentModule {
             quality?: number;
         },
     ): Promise<Buffer> {
-        const params: Record<string, any> = {};
+        const params: Record<string, unknown> = {};
         if (options?.original !== undefined) params.original = options.original;
         if (options?.force !== undefined) params.force = options.force;
         if (options?.height !== undefined) params.height = options.height;
@@ -54,7 +53,7 @@ export class AttachmentModule {
         guid: string,
         options?: { height?: number; width?: number; quality?: number },
     ): Promise<string> {
-        const params: Record<string, any> = {};
+        const params: Record<string, unknown> = {};
         if (options?.height !== undefined) params.height = options.height;
         if (options?.width !== undefined) params.width = options.width;
         if (options?.quality !== undefined) params.quality = options.quality;
@@ -65,7 +64,7 @@ export class AttachmentModule {
         return response.data.data.blurhash;
     }
 
-    async sendAttachment(options: SendAttachmentOptions): Promise<Message> {
+    async sendAttachment(options: SendAttachmentOptions): Promise<MessageResponse> {
         const fileBuffer = await readFile(options.filePath);
         const fileName = options.fileName || path.basename(options.filePath);
 
@@ -88,7 +87,7 @@ export class AttachmentModule {
         return response.data.data;
     }
 
-    async sendSticker(options: SendStickerOptions): Promise<Message> {
+    async sendSticker(options: SendStickerOptions): Promise<MessageResponse> {
         const fileName = options.fileName || path.basename(options.filePath);
         const form = new FormData();
 
