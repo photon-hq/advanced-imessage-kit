@@ -24,7 +24,7 @@ async function main() {
             handleError(error, "Failed to search messages");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

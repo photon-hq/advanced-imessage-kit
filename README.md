@@ -16,14 +16,14 @@ Advanced iMessage Kit is a comprehensive iMessage SDK for **reading**, **sending
 
 ## Features
 
-- **Type Safe** — Complete TypeScript support with full type definitions  
-- **Real-time Communication** — WebSocket-based event system for instant message updates  
-- **Complete API** — Send text, attachments, reactions, edit messages, and more  
-- **Group Management** — Create groups, manage members, and set group icons  
-- **Rich Attachments** — Send images, files, voice messages, stickers, and contact cards  
-- **Advanced Querying** — Powerful message filtering and search capabilities  
-- **Analytics** — Track message counts, delivery status, and chat statistics  
-- **Event-driven** — Listen for new messages, typing indicators, and status changes  
+- **Type Safe** — Complete TypeScript support with full type definitions
+- **Real-time Communication** — WebSocket-based event system for instant message updates
+- **Complete API** — Send text, attachments, reactions, edit messages, and more
+- **Group Management** — Create groups, manage members, and set group icons
+- **Rich Attachments** — Send images, files, voice messages, stickers, and contact cards
+- **Advanced Querying** — Powerful message filtering and search capabilities
+- **Analytics** — Track message counts, delivery status, and chat statistics
+- **Event-driven** — Listen for new messages, typing indicators, and status changes
 
 ## Quick Start
 
@@ -59,7 +59,7 @@ await sdk.messages.sendMessage({
 });
 
 // Disconnect when done
-await sdk.disconnect();
+await sdk.close();
 ```
 
 ## Core API
@@ -83,7 +83,7 @@ sdk.on("ready", () => {
 });
 
 // Graceful disconnect
-await sdk.disconnect();
+await sdk.close();
 ```
 
 ### Connection Management
@@ -691,7 +691,7 @@ interface ClientConfig {
 ```typescript
 // Always disconnect when done
 process.on("SIGINT", async () => {
-  await sdk.disconnect();
+  await sdk.close();
   process.exit(0);
 });
 ```

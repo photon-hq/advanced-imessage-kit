@@ -42,7 +42,7 @@ async function main() {
             handleError(error, "Failed to send sticker");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

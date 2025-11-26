@@ -23,7 +23,7 @@ async function main() {
             }
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

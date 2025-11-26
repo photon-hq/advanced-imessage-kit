@@ -59,7 +59,7 @@ async function main() {
             handleError(error, "Failed to manage scheduled messages");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

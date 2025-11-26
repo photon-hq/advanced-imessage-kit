@@ -81,7 +81,7 @@ async function main() {
             console.log("\n⚠️  Make sure Private API is enabled on the server to use effects!");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

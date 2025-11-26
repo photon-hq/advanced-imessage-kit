@@ -12,7 +12,7 @@ export function createSDK(config: ClientConfig = {}) {
 export function handleExit(sdk: AdvancedIMessageKit): void {
     const shutdown = async () => {
         console.log("\nShutting down...");
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     };
 

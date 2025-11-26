@@ -19,7 +19,7 @@ async function main() {
             handleError(error, "Failed to get statistics");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

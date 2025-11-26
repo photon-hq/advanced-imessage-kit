@@ -31,7 +31,7 @@ async function main() {
             handleError(error, "Failed to unsend message");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

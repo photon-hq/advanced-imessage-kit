@@ -70,7 +70,7 @@ async function autoReplyHeyTest() {
     process.on("SIGINT", () => {
         console.log("\n👋 Disconnecting...");
         console.log(`📊 Processed message count: ${sdk.getProcessedMessageCount()}`);
-        sdk.disconnect();
+        sdk.close();
         process.exit(0);
     });
 }

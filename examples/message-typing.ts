@@ -28,7 +28,7 @@ async function main() {
             handleError(error, "Typing indicator demo failed");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

@@ -264,7 +264,7 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
         }
     }
 
-    async disconnect() {
+    async close() {
         this.socket.disconnect();
     }
 

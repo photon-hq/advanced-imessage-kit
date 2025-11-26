@@ -11,7 +11,7 @@ async function main() {
     sdk.on("ready", async () => {
         if (!fs.existsSync(ATTACHMENT_PATH)) {
             console.error(`file not found: ${ATTACHMENT_PATH}`);
-            await sdk.disconnect();
+            await sdk.close();
             process.exit(1);
         }
 
@@ -36,7 +36,7 @@ async function main() {
             handleError(error, "Failed to send attachment");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

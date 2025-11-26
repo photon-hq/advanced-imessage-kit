@@ -21,7 +21,7 @@ async function main() {
             handleError(error, "Failed to send audio message");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

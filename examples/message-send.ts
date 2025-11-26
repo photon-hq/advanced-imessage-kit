@@ -18,7 +18,7 @@ async function main() {
             handleError(error, "Failed to send message");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 

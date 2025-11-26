@@ -53,7 +53,7 @@ async function main() {
             handleError(error, "Failed to fetch Find My data");
         }
 
-        await sdk.disconnect();
+        await sdk.close();
         process.exit(0);
     });
 
