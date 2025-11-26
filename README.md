@@ -597,7 +597,7 @@ const link = await sdk.facetime.createFaceTimeLink();
 console.log("FaceTime link:", link);
 
 // Listen for FaceTime status changes
-sdk.on("facetime-status-change", (data) => {
+sdk.on("ft-call-status-changed", (data) => {
   console.log("FaceTime status:", data.status);
 });
 ```
@@ -914,4 +914,4 @@ MIT License
 
 ## Author
 
-@Artist-MOBAI
+[@Artist-MOBAI](https://github.com/Artist-MOBAI)
