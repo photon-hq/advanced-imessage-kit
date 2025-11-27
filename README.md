@@ -608,12 +608,8 @@ sdk.on("ft-call-status-changed", (data) => {
 // Get Find My Friends
 const friends = await sdk.icloud.getFindMyFriends();
 
-// Get Find My Devices
-const devices = await sdk.icloud.getFindMyDevices();
-
 // Refresh data
 await sdk.icloud.refreshFindMyFriends();
-await sdk.icloud.refreshFindMyDevices();
 ```
 
 ### Scheduled Messages
@@ -878,7 +874,7 @@ bun run examples/facetime-link.ts
 
 #### `findmy-friends.ts` - Find My Integration
 
-Track friends and devices via Find My network.
+Track friends via Find My network.
 
 ```bash
 bun run examples/findmy-friends.ts

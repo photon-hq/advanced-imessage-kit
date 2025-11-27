@@ -26,29 +26,6 @@ async function main() {
             } else {
                 console.log("no friends\n");
             }
-
-            const devices = await sdk.icloud.getFindMyDevices();
-
-            if (devices?.length) {
-                console.log(`${devices.length} devices\n`);
-
-                devices.forEach((device, i) => {
-                    console.log(`${i + 1}. ${device.name || "unknown"}`);
-                    console.log(`   ${device.deviceModel || "unknown"}`);
-
-                    if (device.location) {
-                        const { latitude, longitude, horizontalAccuracy } = device.location;
-                        console.log(`   ${latitude}, ${longitude} (${horizontalAccuracy || "?"}m)`);
-                    }
-
-                    if (device.batteryLevel != null) {
-                        console.log(`   ${(device.batteryLevel * 100).toFixed(0)}% battery`);
-                    }
-                    console.log();
-                });
-            } else {
-                console.log("no devices\n");
-            }
         } catch (error) {
             handleError(error, "Failed to fetch Find My data");
         }
