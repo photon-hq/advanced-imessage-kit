@@ -904,6 +904,12 @@ Automatic reply example that responds to incoming messages.
 bun run examples/auto-reply-hey.ts
 ```
 
+## LLMs
+
+You can download the `llms.txt` helper file for language models here:
+
+- [Download llms.txt](./llms.txt)
+
 ## License
 
 MIT License

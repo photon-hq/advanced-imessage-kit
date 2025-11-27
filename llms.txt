@@ -1,0 +1,117 @@
+# LLM usage guide for @photon-ai/advanced-imessage-kit
+
+This file is for language models / AI agents that **use** this SDK at runtime to control an iMessage-based agent or automation.
+
+You interact with this SDK from a Node.js / TypeScript environment. The SDK connects to an iMessage server running on macOS.
+
+--------------------------------------------------------------------------------
+1. Core runtime model
+--------------------------------------------------------------------------------
+
+- Import the SDK from `@photon-ai/advanced-imessage-kit`.
+- Create a single long-lived SDK instance per process and reuse it until you intentionally disconnect.
+- The SDK talks to the server over **Socket.IO (events)** and **HTTP (operations)**.
+
+--------------------------------------------------------------------------------
+2. Configuration
+--------------------------------------------------------------------------------
+
+The main configuration object is `ClientConfig`:
+
+- `serverUrl` (string, required in production)
+  - Example: `https://<subdomain>.example.com`.
+- `apiKey` (string, optional but often required by the backend)
+  - If the backend enforces authentication, a valid API key must be provided or connection will fail with an `error` event.
+- `logLevel` (`"debug" | "info" | "warn" | "error"`, optional)
+  - Controls SDK logging verbosity.
+
+As an LLM, you should **never invent** API keys. Always receive them as secure configuration from the host system and avoid logging them.
+
+--------------------------------------------------------------------------------
+3. Connection & authentication flow
+--------------------------------------------------------------------------------
+
+1) Create an SDK instance using the exported `SDK` helper:
+   - The host should run something like: `const sdk = SDK({ serverUrl, apiKey, logLevel });`
+
+2) Connect to the server:
+   - The host should call `await sdk.connect()` once at startup.
+   - Internally the SDK:
+     - Opens a Socket.IO connection to `serverUrl`.
+     - Sends `apiKey` in the Socket.IO handshake (if provided).
+
+3) Wait for authentication and readiness:
+   - During connect the SDK performs an authentication step with the backend using the `apiKey` (when configured).
+   - Only when authentication succeeds will the SDK emit its own **`ready`** event; on authentication failure it emits an **`error`** event.
+   - Your higher-level logic must **wait for `ready`** before sending messages or performing operations.
+
+4) Handle errors and disconnects:
+   - Listen to the SDK events:
+     - `"ready"`      – safe to start sending/receiving.
+     - `"error"`      – includes auth failures and connection issues.
+     - `"disconnect"` – connection closed; you may choose to reconnect with backoff.
+
+Regardless of how the backend is configured, you can always rely on the pattern: **connect → wait for `ready` → operate**.
+
+--------------------------------------------------------------------------------
+4. Using the SDK as an AI agent
+--------------------------------------------------------------------------------
+
+Once `ready` has fired, you can:
+
+- Receive messages:
+  - Subscribe to the `"new-message"` event to observe incoming messages.
+  - Inspect `message.text`, `message.handle`, `message.chats`, `message.attachments`, etc.
+
+- Send and manage messages via HTTP-backed modules:
+  - `sdk.messages.sendMessage(...)` to send text messages or replies.
+  - `sdk.attachments.sendAttachment(...)` for images/files/voice messages.
+  - `sdk.chats.*` for chat operations (create chat, mark read/unread, typing indicators, group management, etc.).
+  - `sdk.server.*` for server statistics and diagnostics.
+
+The underlying Axios client automatically includes `X-API-Key` in HTTP requests when `apiKey` is configured.
+
+--------------------------------------------------------------------------------
+5. Safety, privacy and behavior guidelines
+--------------------------------------------------------------------------------
+
+When acting through this SDK, you are effectively controlling a real iMessage account. Follow these rules:
+
+- **User intent first**
+  - Only send messages or modify chats when explicitly permitted by the user or by higher-level policy.
+  - Avoid unsolicited, bulk, or spam-like messaging.
+
+- **Privacy**
+  - Treat all message content, contacts, and phone numbers as sensitive data.
+  - Do not exfiltrate or store this data outside the approved environment.
+  - Do not log full message content or secrets unless a human explicitly requests it.
+
+- **Auth & security**
+  - Never attempt to bypass or weaken API key validation.
+  - Do not suggest turning off authentication, removing `apiKey`, or changing authentication endpoints without explicit human approval.
+  - If you receive repeated authentication-related `error` events, surface this clearly to the human operator instead of retrying indefinitely.
+
+- **Stability**
+  - Prefer a single long-lived connection rather than repeatedly connecting/disconnecting.
+  - On `disconnect`, use bounded retry with backoff instead of tight loops.
+
+--------------------------------------------------------------------------------
+6. Good high-level patterns for LLM agents
+--------------------------------------------------------------------------------
+
+A simple and robust lifecycle for agents using this SDK is:
+
+1) Startup
+   - Connect and wait for `ready`.
+   - Optionally fetch some initial state (e.g., recent chats/messages) if the user asked for it.
+
+2) Event loop
+   - On each `"new-message"` event:
+     - Understand the user’s request.
+     - Decide whether to respond based on rules and permissions.
+     - Use the appropriate module (`messages`, `attachments`, `chats`) to act.
+
+3) Shutdown
+   - When instructed, call `sdk.close()` to cleanly close the Socket.IO connection.
+
+If you are a more capable LLM that can also edit code in this repository, prefer small, well-scoped changes and keep the dual-channel architecture (Socket.IO for events, HTTP for operations) and authentication flow intact.
