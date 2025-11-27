@@ -17,6 +17,6 @@
         "strict": true,
         "moduleDetection": "force"
     },
-    "include": ["index.ts", "mobai.ts", "events.ts", "modules/**/*", "types/**/*", "lib/**/*", "interfaces/**/*"],
+    "include": ["index.ts", "client.ts", "events.ts", "modules/**/*", "types/**/*", "lib/**/*", "interfaces/**/*"],
     "exclude": ["examples/**/*", "dist/**/*", "node_modules/**/*", "**/*.test.ts", "**/*.spec.ts"]
 }

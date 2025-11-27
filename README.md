@@ -676,6 +676,7 @@ try {
 ```typescript
 interface ClientConfig {
   serverUrl?: string; // Your subdomain: '{your-subdomain}.imsgd.photon.codes'
+  apiKey?: string; // Optional API key for authenticated backends
   logLevel?: "debug" | "info" | "warn" | "error"; // Default: 'info'
 }
 ```
