@@ -72,9 +72,11 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
 
         this.http = axios.create({
             baseURL: this.config.serverUrl,
+            headers: this.config.apiKey ? { "X-API-Key": this.config.apiKey } : undefined,
         });
 
         this.socket = io(this.config.serverUrl, {
+            auth: this.config.apiKey ? { apiKey: this.config.apiKey } : undefined,
             // 🚨 IMPORTANT: Polling transport configuration notes
             //
             // Root cause analysis:
@@ -210,15 +212,25 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
             this.emit("disconnect");
         });
 
+        // Listen for authentication success
+        this.socket.on("auth-ok", () => {
+            this.logger.info("Authentication successful");
+            this.emit("ready");
+        });
+
+        // Listen for authentication errors
+        this.socket.on("auth-error", (error: { message: string; reason?: string }) => {
+            this.logger.error(`Authentication failed: ${error.message} ${error.reason ? `(${error.reason})` : ""}`);
+            this.emit("error", new Error(`Authentication failed: ${error.message}`));
+        });
+
         if (this.socket.connected) {
             this.logger.info("Already connected to iMessage server");
-            this.emit("ready");
             return;
         }
 
         this.socket.once("connect", () => {
-            this.logger.info("Connected to iMessage server");
-            this.emit("ready");
+            this.logger.info("Connected to iMessage server, waiting for authentication...");
         });
 
         if (!this.socket.connected) {
