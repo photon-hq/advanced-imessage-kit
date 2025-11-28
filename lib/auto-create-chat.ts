@@ -12,26 +12,41 @@ export function isChatNotExistError(error: unknown): boolean {
 
 /**
  * Extracts the address from a chatGuid.
+ * Expected format: "service;-;address"
  * e.g., "any;-;+1xxxxxxxxxx" -> "+1xxxxxxxxxx"
+ * Returns undefined if chatGuid is malformed.
  */
 export function extractAddress(chatGuid: string): string | undefined {
-    return chatGuid.split(";-;")[1];
+    const parts = chatGuid.split(";-;");
+    if (parts.length !== 2 || !parts[1]) {
+        return undefined;
+    }
+    return parts[1];
 }
 
 /**
  * Creates a chat with an initial message.
  * Returns the created chat's GUID.
  */
-export async function createChatWithMessage(
-    http: AxiosInstance,
-    address: string,
-    message: string,
-    tempGuid?: string,
-): Promise<string> {
-    const response = await http.post("/api/v1/chat/new", {
-        addresses: [address],
-        message,
-        tempGuid,
-    });
-    return response.data.data?.guid;
+export async function createChatWithMessage(options: {
+    http: AxiosInstance;
+    address: string;
+    message: string;
+    tempGuid?: string;
+    subject?: string;
+    effectId?: string;
+}): Promise<string> {
+    const { http, address, message, tempGuid, subject, effectId } = options;
+    try {
+        const response = await http.post("/api/v1/chat/new", {
+            addresses: [address],
+            message,
+            tempGuid,
+            subject,
+            effectId,
+        });
+        return response.data.data?.guid;
+    } catch (error) {
+        throw new Error(`Failed to create chat with address "${address}": ${error instanceof Error ? error.message : String(error)}`);
+    }
 }

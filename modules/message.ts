@@ -23,7 +23,14 @@ export class MessageModule {
                 const address = extractAddress(options.chatGuid);
                 if (!address) throw error;
 
-                await createChatWithMessage(this.http, address, options.message, tempGuid);
+                await createChatWithMessage({
+                    http: this.http,
+                    address,
+                    message: options.message,
+                    tempGuid,
+                    subject: options.subject,
+                    effectId: options.effectId,
+                });
                 return { guid: tempGuid, text: options.message, dateCreated: Date.now() } as MessageResponse;
             }
         });
