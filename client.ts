@@ -240,6 +240,11 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
 
         this.socket.once("connect", () => {
             this.logger.info("Connected to iMessage server, waiting for authentication...");
+            // If no apiKey, assume legacy server that doesn't require auth - emit ready immediately
+            if (!this.config.apiKey) {
+                this.logger.info("No API key provided, skipping authentication (legacy server mode)");
+                this.emit("ready");
+            }
         });
 
         if (!this.socket.connected) {
