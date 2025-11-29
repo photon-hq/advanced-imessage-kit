@@ -3,4 +3,9 @@ export interface SendStickerOptions {
     filePath: string;
     fileName?: string;
     selectedMessageGuid?: string;
+    stickerX?: number;
+    stickerY?: number;
+    stickerScale?: number;
+    stickerRotation?: number;
+    stickerWidth?: number;
 }
