@@ -14,11 +14,11 @@ export class ScheduledMessageModule {
     }
 
     async updateScheduledMessage(id: string, options: any): Promise<any> {
-        const response = await this.http.put(`/api/v1/message/schedule/${id}`, options);
+        const response = await this.http.put(`/api/v1/message/schedule/${encodeURIComponent(id)}`, options);
         return response.data.data;
     }
 
     async deleteScheduledMessage(id: string): Promise<void> {
-        await this.http.delete(`/api/v1/message/schedule/${id}`);
+        await this.http.delete(`/api/v1/message/schedule/${encodeURIComponent(id)}`);
     }
 }

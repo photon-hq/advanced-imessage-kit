@@ -26,19 +26,19 @@ export class HandleModule {
     }
 
     async getHandle(guid: string): Promise<any> {
-        const response = await this.http.get(`/api/v1/handle/${guid}`);
+        const response = await this.http.get(`/api/v1/handle/${encodeURIComponent(guid)}`);
         return response.data.data;
     }
 
     async getHandleAvailability(address: string, type: "imessage" | "facetime"): Promise<boolean> {
-        const response = await this.http.get(`/api/v1/handle/availability/${type}`, {
+        const response = await this.http.get(`/api/v1/handle/availability/${encodeURIComponent(type)}`, {
             params: { address },
         });
         return response.data.data.available;
     }
 
     async getHandleFocusStatus(guid: string): Promise<string> {
-        const response = await this.http.get(`/api/v1/handle/${guid}/focus`);
+        const response = await this.http.get(`/api/v1/handle/${encodeURIComponent(guid)}/focus`);
         return response.data.data.status;
     }
 }

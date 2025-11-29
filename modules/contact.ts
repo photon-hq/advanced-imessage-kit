@@ -16,11 +16,11 @@ export class ContactModule {
     }
 
     async shareContactCard(chatGuid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${chatGuid}/share/contact`);
+        await this.http.post(`/api/v1/chat/${encodeURIComponent(chatGuid)}/share/contact`);
     }
 
     async shouldShareContact(chatGuid: string): Promise<boolean> {
-        const response = await this.http.get(`/api/v1/chat/${chatGuid}/share/contact/status`);
+        const response = await this.http.get(`/api/v1/chat/${encodeURIComponent(chatGuid)}/share/contact/status`);
         return response.data.data;
     }
 }

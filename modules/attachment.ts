@@ -17,7 +17,7 @@ export class AttachmentModule {
     }
 
     async getAttachment(guid: string): Promise<AttachmentResponse> {
-        const response = await this.http.get(`/api/v1/attachment/${guid}`);
+        const response = await this.http.get(`/api/v1/attachment/${encodeURIComponent(guid)}`);
         return response.data.data;
     }
 
@@ -38,7 +38,7 @@ export class AttachmentModule {
         if (options?.width !== undefined) params.width = options.width;
         if (options?.quality !== undefined) params.quality = options.quality;
 
-        const response = await this.http.get(`/api/v1/attachment/${guid}/download`, {
+        const response = await this.http.get(`/api/v1/attachment/${encodeURIComponent(guid)}/download`, {
             params,
             responseType: "arraybuffer",
         });
@@ -46,7 +46,7 @@ export class AttachmentModule {
     }
 
     async downloadAttachmentLive(guid: string): Promise<Buffer> {
-        const response = await this.http.get(`/api/v1/attachment/${guid}/live`, {
+        const response = await this.http.get(`/api/v1/attachment/${encodeURIComponent(guid)}/live`, {
             responseType: "arraybuffer",
         });
         return Buffer.from(response.data);
@@ -61,7 +61,7 @@ export class AttachmentModule {
         if (options?.width !== undefined) params.width = options.width;
         if (options?.quality !== undefined) params.quality = options.quality;
 
-        const response = await this.http.get(`/api/v1/attachment/${guid}/blurhash`, {
+        const response = await this.http.get(`/api/v1/attachment/${encodeURIComponent(guid)}/blurhash`, {
             params,
         });
         return response.data.data.blurhash;
