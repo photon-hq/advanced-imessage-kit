@@ -221,9 +221,8 @@ await sdk.chats.removeGroupIcon("chat-guid");
 ### Chat Status
 
 ```typescript
-// Mark as read/unread
+// Mark as read
 await sdk.chats.markChatRead("chat-guid");
-await sdk.chats.markChatUnread("chat-guid");
 
 // Typing indicators
 await sdk.chats.startTyping("chat-guid");
@@ -421,11 +420,11 @@ sdk.on("message-send-error", (data) => {
 
 #### `chat-read-status-changed`
 
-Emitted when a chat is marked as read or unread.
+Emitted when a chat is marked as read.
 
 ```typescript
 sdk.on("chat-read-status-changed", ({ chatGuid, read }) => {
-  console.log(`Chat ${chatGuid} marked as ${read ? "read" : "unread"}`);
+  console.log(`Chat ${chatGuid} marked as read`);
 });
 ```
 
