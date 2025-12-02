@@ -22,63 +22,62 @@ async function main() {
     const sdk = createSDK();
 
     sdk.on("ready", async () => {
-        console.log("Message effects example...\n");
-        console.log("⚠️  Note: Effects require Private API to be enabled\n");
+        console.log("Message effects example (requires Private API)\n");
 
         try {
-            console.log("Sending message with confetti effect 🎉");
+            // Confetti effect
             const confettiMessage = await sdk.messages.sendMessage({
                 chatGuid: CHAT_GUID,
-                message: "Happy Birthday! 🎂",
+                message: "Happy Birthday!",
                 effectId: MESSAGE_EFFECTS.confetti,
             });
-            console.log(`✓ Confetti message sent! GUID: ${confettiMessage.guid}\n`);
+            console.log(`confetti: ${confettiMessage.guid}`);
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            console.log("Sending message with fireworks effect 🎆");
+            // Fireworks effect
             const fireworksMessage = await sdk.messages.sendMessage({
                 chatGuid: CHAT_GUID,
-                message: "Celebration time! 🎊",
+                message: "Celebration time!",
                 effectId: MESSAGE_EFFECTS.fireworks,
             });
-            console.log(`✓ Fireworks message sent! GUID: ${fireworksMessage.guid}\n`);
+            console.log(`fireworks: ${fireworksMessage.guid}`);
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            console.log("Sending message with balloons effect 🎈");
+            // Balloons effect
             const balloonsMessage = await sdk.messages.sendMessage({
                 chatGuid: CHAT_GUID,
-                message: "Congratulations! 🥳",
+                message: "Congratulations!",
                 effectId: MESSAGE_EFFECTS.balloons,
             });
-            console.log(`✓ Balloons message sent! GUID: ${balloonsMessage.guid}\n`);
+            console.log(`balloons: ${balloonsMessage.guid}`);
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            console.log("Sending message with invisible ink effect 🕵️");
+            // Invisible ink effect
             const invisibleMessage = await sdk.messages.sendMessage({
                 chatGuid: CHAT_GUID,
-                message: "Secret message! 🤫",
+                message: "Secret message!",
                 effectId: MESSAGE_EFFECTS.invisible_ink,
             });
-            console.log(`✓ Invisible ink message sent! GUID: ${invisibleMessage.guid}\n`);
+            console.log(`invisible ink: ${invisibleMessage.guid}`);
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            console.log("Sending message with loud/slam effect 💥");
+            // Loud effect
             const loudMessage = await sdk.messages.sendMessage({
                 chatGuid: CHAT_GUID,
                 message: "IMPORTANT MESSAGE!",
                 effectId: MESSAGE_EFFECTS.loud,
             });
-            console.log(`✓ Loud message sent! GUID: ${loudMessage.guid}\n`);
+            console.log(`loud: ${loudMessage.guid}`);
 
-            console.log("All effects demonstrated! Available effects:");
+            console.log("\nAvailable effects:");
             console.log(JSON.stringify(MESSAGE_EFFECTS, null, 2));
         } catch (error) {
             handleError(error, "Failed to send message with effect");
-            console.log("\n⚠️  Make sure Private API is enabled on the server to use effects!");
+            console.log("\nNote: Effects require Private API to be enabled");
         }
 
         await sdk.close();

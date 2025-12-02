@@ -14,10 +14,10 @@ async function main() {
                 const chatGuid = hasIMessage ? `iMessage;-;${contact}` : `SMS;-;${contact}`;
 
                 console.log(`Checking: ${contact}`);
-                console.log(`iMessage: ${hasIMessage ? "✅" : "❌"}`);
-                console.log(`FaceTime: ${hasFaceTime ? "✅" : "❌"}`);
+                console.log(`iMessage: ${hasIMessage ? "yes" : "no"}`);
+                console.log(`FaceTime: ${hasFaceTime ? "yes" : "no"}`);
                 console.log(`CHAT_GUID: ${chatGuid}`);
-                console.log(`Service: ${hasIMessage ? "iMessage 💙" : "SMS 💚"}\n`);
+                console.log(`Service: ${hasIMessage ? "iMessage" : "SMS"}\n`);
             } catch (error) {
                 handleError(error, `Failed to check availability for ${contact}`);
             }

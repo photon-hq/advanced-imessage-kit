@@ -3,7 +3,8 @@ import { type ClientConfig, SDK } from "../index";
 
 export function createSDK(config: ClientConfig = {}) {
     return SDK({
-        serverUrl: config.serverUrl ?? "http://localhost:1234",
+        serverUrl: config.serverUrl ?? process.env.SERVER_URL ?? "http://localhost:1234",
+        apiKey: config.apiKey ?? process.env.API_KEY,
         logLevel: config.logLevel ?? "info",
         ...config,
     });

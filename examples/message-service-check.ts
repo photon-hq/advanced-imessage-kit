@@ -11,10 +11,8 @@ async function main() {
         if (message.isFromMe) return;
 
         const service = message.chats?.[0]?.guid?.split(";")[0] || "Unknown";
-        const isIMessage = service === "iMessage";
-        const icon = isIMessage ? "💙" : service === "SMS" ? "💚" : "❓";
 
-        console.log(`${icon} ${service} | ${message.handle?.address || "Unknown"} | ${message.text || "(no text)"}`);
+        console.log(`[${service}] ${message.handle?.address || "Unknown"}: ${message.text || "(no text)"}`);
     });
 
     await sdk.connect();

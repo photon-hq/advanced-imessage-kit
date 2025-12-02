@@ -1,78 +1,44 @@
-import { SDK } from "../index";
+import { createSDK, handleExit } from "./utils";
 
-async function autoReplyHeyTest() {
-    console.log('🤖 Auto-reply Test - Reply with "Hey!" + original message when receiving a message');
-    console.log("Server: https://u1.imsgd.photon.codes");
-    console.log("=".repeat(50));
-
-    const sdk = SDK({
-        serverUrl: "https://u1.imsgd.photon.codes",
-        logLevel: "info",
-    });
-
-    // Register event listeners
-    sdk.on("connect", () => {
-        console.log("✅ [SDK] Socket.IO connected successfully");
-    });
-
-    sdk.on("disconnect", () => {
-        console.log("❌ [SDK] Socket.IO disconnected");
-    });
-
-    sdk.on("error", (error: any) => {
-        console.log("🚨 [SDK] Error:", error);
-    });
+async function main() {
+    const sdk = createSDK();
 
     sdk.on("ready", () => {
-        console.log("✅ SDK ready, auto-reply function started!");
+        console.log("Auto-reply started");
     });
 
     sdk.on("new-message", async (message) => {
-        console.log("📨 Received new message:");
-        console.log("  Sender:", message.handle?.address || "Unknown");
-        console.log("  Content:", message.text || message.attributedBody || "No text");
-        console.log("  GUID:", message.guid);
-        console.log("  From me:", message.isFromMe);
+        console.log(`\nReceived: ${message.text || "(no text)"}`);
+        console.log(`From: ${message.handle?.address || "unknown"}`);
 
-        // If the message is not from me, send an auto-reply
-        if (!message.isFromMe && message.chats && message.chats.length > 0) {
-            const chat = message.chats[0];
-            if (chat) {
-                const chatGuid = chat.guid;
-                console.log("🤖 Preparing to send auto-reply to chat:", chatGuid);
+        // Skip messages from self
+        if (message.isFromMe) {
+            return;
+        }
 
-                try {
-                    // Get original message content
-                    const originalMessage = message.text || message.attributedBody?.[0]?.string || "No text";
+        // Get chat guid from message
+        const chat = message.chats?.[0];
+        if (!chat) {
+            return;
+        }
 
-                    // Send auto-reply: Hey! + original message
-                    const replyMessage = `Hey！${originalMessage}`;
+        try {
+            const originalText = message.text || message.attributedBody?.[0]?.string || "";
+            const replyText = `Hey! ${originalText}`;
 
-                    const response = await sdk.messages.sendMessage({
-                        chatGuid: chatGuid,
-                        message: replyMessage,
-                    });
+            const response = await sdk.messages.sendMessage({
+                chatGuid: chat.guid,
+                message: replyText,
+            });
 
-                    console.log("✅ Auto-reply sent successfully:", response);
-                } catch (error) {
-                    console.error("❌ Auto-reply failed to send:", error);
-                }
-            }
-        } else if (message.isFromMe) {
-            console.log("⏭️  Skipping message sent by me");
+            console.log(`Replied: ${response.guid}`);
+        } catch (error) {
+            console.error("Failed to reply:", error);
         }
     });
 
-    console.log("🚀 Starting connection...");
     await sdk.connect();
-
-    // Keep connection alive
-    process.on("SIGINT", () => {
-        console.log("\n👋 Disconnecting...");
-        console.log(`📊 Processed message count: ${sdk.getProcessedMessageCount()}`);
-        sdk.close();
-        process.exit(0);
-    });
+    handleExit(sdk);
 }
 
-autoReplyHeyTest().catch(console.error);
+main().catch(console.error);
