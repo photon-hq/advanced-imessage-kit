@@ -634,6 +634,24 @@ await sdk.scheduledMessages.updateScheduledMessage("schedule-id", {
 await sdk.scheduledMessages.deleteScheduledMessage("schedule-id");
 ```
 
+### Polls
+
+```typescript
+// Create a poll
+const pollMessage = await sdk.polls.create({
+  chatGuid: "any;-;+1234567890",
+  title: "What should we do?",
+  options: ["Option A", "Option B", "Option C"],
+});
+
+// Add a new option to an existing poll
+await sdk.polls.addOption({
+  chatGuid: "any;-;+1234567890",
+  pollMessageGuid: "poll-message-guid",
+  optionText: "New Option",
+});
+```
+
 ### Server Information
 
 ```typescript
@@ -856,6 +874,22 @@ Schedule one-time and recurring messages.
 
 ```bash
 CHAT_GUID="+1234567890" bun run examples/message-scheduled.ts
+```
+
+#### `poll-create.ts` - Create Polls
+
+Create polls in iMessage chats. Requires Private API.
+
+```bash
+CHAT_GUID="chat-guid" bun run examples/poll-create.ts
+```
+
+#### `poll-add-option.ts` - Add Poll Options
+
+Add new options to existing polls. Requires Private API.
+
+```bash
+CHAT_GUID="chat-guid" bun run examples/poll-add-option.ts
 ```
 
 #### `facetime-link.ts` - FaceTime Links
