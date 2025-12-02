@@ -18,28 +18,30 @@ Advanced iMessage Kit is a full-featured iMessage SDK for **reading**, **sending
 
 ## Features
 
-| Feature | Method | Example |
-|---------|--------|---------|
-| [Send Messages](#send-messages) | `messages.sendMessage()` | [message-send.ts](./examples/message-send.ts) |
-| [Reply to Messages](#send-messages) | `messages.sendMessage()` | [message-reply.ts](./examples/message-reply.ts) |
-| [Message Effects](#send-messages) | `messages.sendMessage()` | [message-effects.ts](./examples/message-effects.ts) |
-| [Unsend Messages](#unsend-messages) | `messages.unsendMessage()` | [message-unsend.ts](./examples/message-unsend.ts) |
-| [Send Tapbacks](#send-tapbacks) | `messages.sendReaction()` | [message-reaction.ts](./examples/message-reaction.ts) |
-| [Query Messages](#query-messages) | `messages.getMessages()` | [message-search.ts](./examples/message-search.ts) |
-| [Send Attachments](#send-attachments) | `attachments.sendAttachment()` | [message-attachment.ts](./examples/message-attachment.ts) |
-| [Send Audio Messages](#send-audio-messages) | `attachments.sendAttachment()` | [message-audio.ts](./examples/message-audio.ts) |
-| [Send Stickers](#send-stickers) | `attachments.sendSticker()` | [message-reply-sticker.ts](./examples/message-reply-sticker.ts) |
-| [Download Attachments](#download-attachments) | `attachments.downloadAttachment()` | [attachment-download.ts](./examples/attachment-download.ts) |
-| [Get Chats](#get-chats) | `chats.getChats()` | [chat-fetch.ts](./examples/chat-fetch.ts) |
-| [Manage Group Chats](#manage-group-chats) | `chats.addParticipant()` | [chat-group.ts](./examples/chat-group.ts) |
-| [Typing Indicators](#typing-indicators) | `chats.startTyping()` | [message-typing.ts](./examples/message-typing.ts) |
-| [Get Contacts](#get-contacts) | `contacts.getContacts()` | [contact-list.ts](./examples/contact-list.ts) |
-| [Check iMessage Availability](#check-service-availability) | `handles.getHandleAvailability()` | [service-check.ts](./examples/service-check.ts) |
-| [Server Info](#get-server-info) | `server.getServerInfo()` | [server-info.ts](./examples/server-info.ts) |
-| [Message Statistics](#message-statistics) | `server.getMessageStats()` | [message-stats.ts](./examples/message-stats.ts) |
-| [Find My Friends](#find-my-friends) *(WIP)* | `icloud.getFindMyFriends()` | [findmy-friends.ts](./examples/findmy-friends.ts) |
-| [Real-time Events](#real-time-events) | `sdk.on()` | [demo-basic.ts](./examples/demo-basic.ts) |
-| [Auto Reply](#real-time-events) | `sdk.on()` | [auto-reply-hey.ts](./examples/auto-reply-hey.ts) |
+| Feature                                                    | Method                             | Example                                                         |
+| ---------------------------------------------------------- | ---------------------------------- | --------------------------------------------------------------- |
+| [Send Messages](#send-messages)                            | `messages.sendMessage()`           | [message-send.ts](./examples/message-send.ts)                   |
+| [Reply to Messages](#send-messages)                        | `messages.sendMessage()`           | [message-reply.ts](./examples/message-reply.ts)                 |
+| [Message Effects](#send-messages)                          | `messages.sendMessage()`           | [message-effects.ts](./examples/message-effects.ts)             |
+| [Unsend Messages](#unsend-messages)                        | `messages.unsendMessage()`         | [message-unsend.ts](./examples/message-unsend.ts)               |
+| [Send Tapbacks](#send-tapbacks)                            | `messages.sendReaction()`          | [message-reaction.ts](./examples/message-reaction.ts)           |
+| [Query Messages](#query-messages)                          | `messages.getMessages()`           | [message-search.ts](./examples/message-search.ts)               |
+| [Send Attachments](#send-attachments)                      | `attachments.sendAttachment()`     | [message-attachment.ts](./examples/message-attachment.ts)       |
+| [Send Audio Messages](#send-audio-messages)                | `attachments.sendAttachment()`     | [message-audio.ts](./examples/message-audio.ts)                 |
+| [Send Stickers](#send-stickers)                            | `attachments.sendSticker()`        | [message-reply-sticker.ts](./examples/message-reply-sticker.ts) |
+| [Download Attachments](#download-attachments)              | `attachments.downloadAttachment()` | [attachment-download.ts](./examples/attachment-download.ts)     |
+| [Get Chats](#get-chats)                                    | `chats.getChats()`                 | [chat-fetch.ts](./examples/chat-fetch.ts)                       |
+| [Manage Group Chats](#manage-group-chats)                  | `chats.addParticipant()`           | [chat-group.ts](./examples/chat-group.ts)                       |
+| [Typing Indicators](#typing-indicators)                    | `chats.startTyping()`              | [message-typing.ts](./examples/message-typing.ts)               |
+| [Get Contacts](#get-contacts)                              | `contacts.getContacts()`           | [contact-list.ts](./examples/contact-list.ts)                   |
+| [Check iMessage Availability](#check-service-availability) | `handles.getHandleAvailability()`  | [service-check.ts](./examples/service-check.ts)                 |
+| [Server Info](#get-server-info)                            | `server.getServerInfo()`           | [server-info.ts](./examples/server-info.ts)                     |
+| [Message Statistics](#message-statistics)                  | `server.getMessageStats()`         | [message-stats.ts](./examples/message-stats.ts)                 |
+| [Create Polls](#create-polls)                              | `polls.create()`                   | [poll-create.ts](./examples/poll-create.ts)                     |
+| [Add Poll Options](#add-poll-options)                      | `polls.addOption()`                | [poll-add-option.ts](./examples/poll-add-option.ts)             |
+| [Find My Friends](#find-my-friends) _(WIP)_                | `icloud.getFindMyFriends()`        | [findmy-friends.ts](./examples/findmy-friends.ts)               |
+| [Real-time Events](#real-time-events)                      | `sdk.on()`                         | [demo-basic.ts](./examples/demo-basic.ts)                       |
+| [Auto Reply](#real-time-events)                            | `sdk.on()`                         | [auto-reply-hey.ts](./examples/auto-reply-hey.ts)               |
 
 ---
 
@@ -80,9 +82,9 @@ await sdk.close();
 
 ```typescript
 interface ClientConfig {
-  serverUrl?: string;  // Server URL, defaults to "http://localhost:1234"
-  apiKey?: string;     // API key (if server requires authentication)
-  logLevel?: "debug" | "info" | "warn" | "error";  // Log level, defaults to "info"
+  serverUrl?: string; // Server URL, defaults to "http://localhost:1234"
+  apiKey?: string; // API key (if server requires authentication)
+  logLevel?: "debug" | "info" | "warn" | "error"; // Log level, defaults to "info"
 }
 ```
 
@@ -151,20 +153,20 @@ await sdk.messages.sendMessage({
 
 **Message Effects**:
 
-| Effect | effectId |
-|--------|----------|
-| Confetti | `com.apple.messages.effect.CKConfettiEffect` |
-| Fireworks | `com.apple.messages.effect.CKFireworksEffect` |
-| Balloons | `com.apple.messages.effect.CKBalloonEffect` |
-| Hearts | `com.apple.messages.effect.CKHeartEffect` |
-| Lasers | `com.apple.messages.effect.CKHappyBirthdayEffect` |
-| Shooting Star | `com.apple.messages.effect.CKShootingStarEffect` |
-| Sparkles | `com.apple.messages.effect.CKSparklesEffect` |
-| Echo | `com.apple.messages.effect.CKEchoEffect` |
-| Spotlight | `com.apple.messages.effect.CKSpotlightEffect` |
-| Gentle | `com.apple.MobileSMS.expressivesend.gentle` |
-| Loud | `com.apple.MobileSMS.expressivesend.loud` |
-| Slam | `com.apple.MobileSMS.expressivesend.impact` |
+| Effect        | effectId                                          |
+| ------------- | ------------------------------------------------- |
+| Confetti      | `com.apple.messages.effect.CKConfettiEffect`      |
+| Fireworks     | `com.apple.messages.effect.CKFireworksEffect`     |
+| Balloons      | `com.apple.messages.effect.CKBalloonEffect`       |
+| Hearts        | `com.apple.messages.effect.CKHeartEffect`         |
+| Lasers        | `com.apple.messages.effect.CKHappyBirthdayEffect` |
+| Shooting Star | `com.apple.messages.effect.CKShootingStarEffect`  |
+| Sparkles      | `com.apple.messages.effect.CKSparklesEffect`      |
+| Echo          | `com.apple.messages.effect.CKEchoEffect`          |
+| Spotlight     | `com.apple.messages.effect.CKSpotlightEffect`     |
+| Gentle        | `com.apple.MobileSMS.expressivesend.gentle`       |
+| Loud          | `com.apple.MobileSMS.expressivesend.loud`         |
+| Slam          | `com.apple.MobileSMS.expressivesend.impact`       |
 | Invisible Ink | `com.apple.MobileSMS.expressivesend.invisibleink` |
 
 > Example: [message-effects.ts](./examples/message-effects.ts)
@@ -180,15 +182,15 @@ const messages = await sdk.messages.getMessages({
   chatGuid: "iMessage;-;+1234567890",
   limit: 50,
   offset: 0,
-  sort: "DESC",  // DESC = newest first, ASC = oldest first
+  sort: "DESC", // DESC = newest first, ASC = oldest first
   before: Date.now(),
-  after: Date.now() - 86400000,  // Last 24 hours
+  after: Date.now() - 86400000, // Last 24 hours
 });
 
 // Search messages
 const results = await sdk.messages.searchMessages({
   query: "keyword",
-  chatGuid: "iMessage;-;+1234567890",  // Optional
+  chatGuid: "iMessage;-;+1234567890", // Optional
   limit: 20,
 });
 
@@ -203,7 +205,7 @@ const updated = await sdk.messages.getUpdatedMessageCount();
 ```typescript
 await sdk.messages.unsendMessage({
   messageGuid: "message-guid-to-unsend",
-  partIndex: 0,  // Optional
+  partIndex: 0, // Optional
 });
 ```
 
@@ -215,15 +217,15 @@ await sdk.messages.unsendMessage({
 await sdk.messages.sendReaction({
   chatGuid: "iMessage;-;+1234567890",
   messageGuid: "target-message-guid",
-  reaction: "love",  // love, like, dislike, laugh, emphasize, question
-  partIndex: 0,  // Optional
+  reaction: "love", // love, like, dislike, laugh, emphasize, question
+  partIndex: 0, // Optional
 });
 
 // Remove a Tapback (prefix with -)
 await sdk.messages.sendReaction({
   chatGuid: "iMessage;-;+1234567890",
   messageGuid: "target-message-guid",
-  reaction: "-love",  // -love, -like, -dislike, -laugh, -emphasize, -question
+  reaction: "-love", // -love, -like, -dislike, -laugh, -emphasize, -question
 });
 ```
 
@@ -249,8 +251,8 @@ const media = await sdk.messages.getEmbeddedMedia("message-guid");
 
 ```typescript
 const chats = await sdk.chats.getChats({
-  withLastMessage: true,   // Include last message
-  withArchived: false,     // Include archived chats
+  withLastMessage: true, // Include last message
+  withArchived: false, // Include archived chats
   offset: 0,
   limit: 50,
 });
@@ -272,9 +274,9 @@ const chat = await sdk.chats.getChat("chat-guid", {
 ```typescript
 const newChat = await sdk.chats.createChat({
   addresses: ["+1234567890", "+0987654321"],
-  message: "Hello everyone!",  // Optional initial message
-  service: "iMessage",  // "iMessage" or "SMS"
-  method: "private-api",  // "apple-script" or "private-api"
+  message: "Hello everyone!", // Optional initial message
+  service: "iMessage", // "iMessage" or "SMS"
+  method: "private-api", // "apple-script" or "private-api"
 });
 ```
 
@@ -358,7 +360,7 @@ await sdk.chats.removeGroupIcon("chat-guid");
 const message = await sdk.attachments.sendAttachment({
   chatGuid: "iMessage;-;+1234567890",
   filePath: "/path/to/file.jpg",
-  fileName: "custom-name.jpg",  // Optional
+  fileName: "custom-name.jpg", // Optional
 });
 ```
 
@@ -380,7 +382,7 @@ const message = await sdk.attachments.sendAttachment({
 await sdk.attachments.sendSticker({
   chatGuid: "iMessage;-;+1234567890",
   filePath: "/path/to/sticker.png",
-  selectedMessageGuid: "message-to-stick-on",  // Optional
+  selectedMessageGuid: "message-to-stick-on", // Optional
 });
 ```
 
@@ -401,15 +403,17 @@ const count = await sdk.attachments.getAttachmentCount();
 ```typescript
 // Download attachment
 const buffer = await sdk.attachments.downloadAttachment("attachment-guid", {
-  original: true,   // Download original file
-  force: false,     // Force re-download
-  width: 800,       // Image width (for thumbnails)
-  height: 600,      // Image height
-  quality: 80,      // Image quality
+  original: true, // Download original file
+  force: false, // Force re-download
+  width: 800, // Image width (for thumbnails)
+  height: 600, // Image height
+  quality: 80, // Image quality
 });
 
 // Download Live Photo video
-const liveBuffer = await sdk.attachments.downloadAttachmentLive("attachment-guid");
+const liveBuffer = await sdk.attachments.downloadAttachmentLive(
+  "attachment-guid"
+);
 
 // Get blurhash (for placeholders)
 const blurhash = await sdk.attachments.getAttachmentBlurhash("attachment-guid");
@@ -449,8 +453,8 @@ A Handle represents a messaging address (phone number or email).
 ```typescript
 // Query handles
 const result = await sdk.handles.queryHandles({
-  address: "+1234567890",  // Optional, filter by address
-  with: ["chats"],         // Optional, include related chats
+  address: "+1234567890", // Optional, filter by address
+  with: ["chats"], // Optional, include related chats
   offset: 0,
   limit: 50,
 });
@@ -468,13 +472,17 @@ Check if a phone/email supports iMessage or FaceTime:
 
 ```typescript
 // First parameter is the address (phone or email), not handle guid
-const hasIMessage = await sdk.handles.getHandleAvailability("+1234567890", "imessage");
-const hasFaceTime = await sdk.handles.getHandleAvailability("+1234567890", "facetime");
+const hasIMessage = await sdk.handles.getHandleAvailability(
+  "+1234567890",
+  "imessage"
+);
+const hasFaceTime = await sdk.handles.getHandleAvailability(
+  "+1234567890",
+  "facetime"
+);
 
 // Choose service based on availability
-const chatGuid = hasIMessage 
-  ? `iMessage;-;+1234567890` 
-  : `SMS;-;+1234567890`;
+const chatGuid = hasIMessage ? `iMessage;-;+1234567890` : `SMS;-;+1234567890`;
 ```
 
 > Example: [service-check.ts](./examples/service-check.ts)
@@ -532,7 +540,7 @@ const chatMediaStats = await sdk.server.getMediaStatisticsByChat();
 ### Server Logs
 
 ```typescript
-const logs = await sdk.server.getServerLogs(100);  // Get last 100 logs
+const logs = await sdk.server.getServerLogs(100); // Get last 100 logs
 ```
 
 ### Alert Management
@@ -549,7 +557,39 @@ await sdk.server.markAlertAsRead(["alert-id-1", "alert-id-2"]);
 
 ---
 
-## iCloud *(Work in Progress)*
+## Polls
+
+> Examples: [poll-create.ts](./examples/poll-create.ts) | [poll-add-option.ts](./examples/poll-add-option.ts)
+
+### Create Polls
+
+```typescript
+const pollMessage = await sdk.polls.create({
+  chatGuid: "iMessage;-;+1234567890",
+  title: "What should we do?", // Optional
+  options: ["Option A", "Option B", "Option C"],
+});
+
+console.log("Poll GUID:", pollMessage.guid);
+```
+
+> Example: [poll-create.ts](./examples/poll-create.ts)
+
+### Add Poll Options
+
+```typescript
+await sdk.polls.addOption({
+  chatGuid: "iMessage;-;+1234567890",
+  pollMessageGuid: "poll-message-guid",
+  optionText: "New Option D",
+});
+```
+
+> Example: [poll-add-option.ts](./examples/poll-add-option.ts)
+
+---
+
+## iCloud _(Work in Progress)_
 
 > Example: [findmy-friends.ts](./examples/findmy-friends.ts)
 
@@ -656,7 +696,7 @@ sdk.on("group-icon-removed", (message) => {
 });
 ```
 
-### Find My Friends Events *(WIP)*
+### Find My Friends Events _(WIP)_
 
 ```typescript
 sdk.on("new-findmy-location", (location) => {
@@ -745,55 +785,62 @@ bun run examples/<filename>.ts
 
 ### Getting Started
 
-| File | Description |
-|------|-------------|
-| [demo-basic.ts](./examples/demo-basic.ts) | Listen for new messages |
-| [demo-advanced.ts](./examples/demo-advanced.ts) | Full feature demo |
-| [message-send.ts](./examples/message-send.ts) | Send text messages |
-| [message-attachment.ts](./examples/message-attachment.ts) | Send attachments |
-| [message-audio.ts](./examples/message-audio.ts) | Send audio messages |
+| File                                                      | Description             |
+| --------------------------------------------------------- | ----------------------- |
+| [demo-basic.ts](./examples/demo-basic.ts)                 | Listen for new messages |
+| [demo-advanced.ts](./examples/demo-advanced.ts)           | Full feature demo       |
+| [message-send.ts](./examples/message-send.ts)             | Send text messages      |
+| [message-attachment.ts](./examples/message-attachment.ts) | Send attachments        |
+| [message-audio.ts](./examples/message-audio.ts)           | Send audio messages     |
 
 ### Message Operations
 
-| File | Description |
-|------|-------------|
-| [message-reply.ts](./examples/message-reply.ts) | Reply to messages |
-| [message-unsend.ts](./examples/message-unsend.ts) | Unsend messages |
-| [message-reaction.ts](./examples/message-reaction.ts) | Send Tapbacks |
-| [message-effects.ts](./examples/message-effects.ts) | Message effects |
-| [message-search.ts](./examples/message-search.ts) | Search messages |
+| File                                                  | Description       |
+| ----------------------------------------------------- | ----------------- |
+| [message-reply.ts](./examples/message-reply.ts)       | Reply to messages |
+| [message-unsend.ts](./examples/message-unsend.ts)     | Unsend messages   |
+| [message-reaction.ts](./examples/message-reaction.ts) | Send Tapbacks     |
+| [message-effects.ts](./examples/message-effects.ts)   | Message effects   |
+| [message-search.ts](./examples/message-search.ts)     | Search messages   |
 
 ### Chats & Groups
 
-| File | Description |
-|------|-------------|
-| [chat-fetch.ts](./examples/chat-fetch.ts) | Get chat list |
-| [chat-group.ts](./examples/chat-group.ts) | Manage groups |
+| File                                              | Description       |
+| ------------------------------------------------- | ----------------- |
+| [chat-fetch.ts](./examples/chat-fetch.ts)         | Get chat list     |
+| [chat-group.ts](./examples/chat-group.ts)         | Manage groups     |
 | [message-typing.ts](./examples/message-typing.ts) | Typing indicators |
 
 ### Contacts & Services
 
-| File | Description |
-|------|-------------|
-| [contact-list.ts](./examples/contact-list.ts) | Get contacts |
-| [service-check.ts](./examples/service-check.ts) | Check iMessage availability |
+| File                                                            | Description                   |
+| --------------------------------------------------------------- | ----------------------------- |
+| [contact-list.ts](./examples/contact-list.ts)                   | Get contacts                  |
+| [service-check.ts](./examples/service-check.ts)                 | Check iMessage availability   |
 | [message-service-check.ts](./examples/message-service-check.ts) | Monitor message service types |
 
 ### Attachments & Media
 
-| File | Description |
-|------|-------------|
-| [attachment-download.ts](./examples/attachment-download.ts) | Download attachments |
-| [message-reply-sticker.ts](./examples/message-reply-sticker.ts) | Send stickers |
+| File                                                            | Description          |
+| --------------------------------------------------------------- | -------------------- |
+| [attachment-download.ts](./examples/attachment-download.ts)     | Download attachments |
+| [message-reply-sticker.ts](./examples/message-reply-sticker.ts) | Send stickers        |
+
+### Polls
+
+| File                                                | Description      |
+| --------------------------------------------------- | ---------------- |
+| [poll-create.ts](./examples/poll-create.ts)         | Create polls     |
+| [poll-add-option.ts](./examples/poll-add-option.ts) | Add poll options |
 
 ### Server & Advanced
 
-| File | Description |
-|------|-------------|
-| [server-info.ts](./examples/server-info.ts) | Server info and logs |
-| [message-stats.ts](./examples/message-stats.ts) | Message statistics |
-| [findmy-friends.ts](./examples/findmy-friends.ts) | Find My Friends *(WIP)* |
-| [auto-reply-hey.ts](./examples/auto-reply-hey.ts) | Auto reply bot |
+| File                                              | Description             |
+| ------------------------------------------------- | ----------------------- |
+| [server-info.ts](./examples/server-info.ts)       | Server info and logs    |
+| [message-stats.ts](./examples/message-stats.ts)   | Message statistics      |
+| [findmy-friends.ts](./examples/findmy-friends.ts) | Find My Friends _(WIP)_ |
+| [auto-reply-hey.ts](./examples/auto-reply-hey.ts) | Auto reply bot          |
 
 ---
 
