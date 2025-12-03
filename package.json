@@ -1,6 +1,6 @@
 {
     "name": "@photon-ai/advanced-imessage-kit",
-    "version": "v1.2.1",
+    "version": "1.3.0",
     "description": "Powerful TypeScript iMessage SDK with real-time message processing",
     "keywords": [
         "imessage",
