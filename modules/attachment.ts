@@ -83,6 +83,9 @@ export class AttachmentModule {
                     form.append("method", "private-api");
                 }
             }
+            if (options.selectedMessageGuid) {
+                form.append("selectedMessageGuid", options.selectedMessageGuid);
+            }
 
             const response = await this.http.post("/api/v1/message/attachment", form, {
                 headers: form.getHeaders(),
