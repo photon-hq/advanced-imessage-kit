@@ -1,6 +1,6 @@
 import { createSDK, handleError } from "./utils";
 
-const CHAT_GUID = process.env.CHAT_GUID || "any;-;+1234567890";
+const CHAT_GUID = process.env.CHAT_GUID || "any;-;+13322593374";
 
 const MESSAGE_EFFECTS = {
     confetti: "com.apple.messages.effect.CKConfettiEffect",
@@ -33,7 +33,17 @@ async function main() {
             });
             console.log(`confetti: ${confettiMessage.guid}`);
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            // Lasers effect
+            const lasersMessage = await sdk.messages.sendMessage({
+                chatGuid: CHAT_GUID,
+                message: "Pew pew pew!",
+                effectId: MESSAGE_EFFECTS.lasers,
+            });
+            console.log(`lasers: ${lasersMessage.guid}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
 
             // Fireworks effect
             const fireworksMessage = await sdk.messages.sendMessage({
@@ -43,7 +53,7 @@ async function main() {
             });
             console.log(`fireworks: ${fireworksMessage.guid}`);
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
 
             // Balloons effect
             const balloonsMessage = await sdk.messages.sendMessage({
@@ -53,17 +63,67 @@ async function main() {
             });
             console.log(`balloons: ${balloonsMessage.guid}`);
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
 
-            // Invisible ink effect
-            const invisibleMessage = await sdk.messages.sendMessage({
+            // Hearts effect
+            const heartsMessage = await sdk.messages.sendMessage({
                 chatGuid: CHAT_GUID,
-                message: "Secret message!",
-                effectId: MESSAGE_EFFECTS.invisible_ink,
+                message: "I love you!",
+                effectId: MESSAGE_EFFECTS.hearts,
             });
-            console.log(`invisible ink: ${invisibleMessage.guid}`);
+            console.log(`hearts: ${heartsMessage.guid}`);
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            // Shooting star effect
+            const shootingStarMessage = await sdk.messages.sendMessage({
+                chatGuid: CHAT_GUID,
+                message: "Make a wish!",
+                effectId: MESSAGE_EFFECTS.shootingStar,
+            });
+            console.log(`shootingStar: ${shootingStarMessage.guid}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            // Celebration effect
+            const celebrationMessage = await sdk.messages.sendMessage({
+                chatGuid: CHAT_GUID,
+                message: "Amazing!",
+                effectId: MESSAGE_EFFECTS.celebration,
+            });
+            console.log(`celebration: ${celebrationMessage.guid}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            // Echo effect
+            const echoMessage = await sdk.messages.sendMessage({
+                chatGuid: CHAT_GUID,
+                message: "Hello hello hello...",
+                effectId: MESSAGE_EFFECTS.echo,
+            });
+            console.log(`echo: ${echoMessage.guid}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            // Spotlight effect
+            const spotlightMessage = await sdk.messages.sendMessage({
+                chatGuid: CHAT_GUID,
+                message: "Look at me!",
+                effectId: MESSAGE_EFFECTS.spotlight,
+            });
+            console.log(`spotlight: ${spotlightMessage.guid}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            // Gentle effect
+            const gentleMessage = await sdk.messages.sendMessage({
+                chatGuid: CHAT_GUID,
+                message: "Shh...",
+                effectId: MESSAGE_EFFECTS.gentle,
+            });
+            console.log(`gentle: ${gentleMessage.guid}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
 
             // Loud effect
             const loudMessage = await sdk.messages.sendMessage({
@@ -72,6 +132,26 @@ async function main() {
                 effectId: MESSAGE_EFFECTS.loud,
             });
             console.log(`loud: ${loudMessage.guid}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            // Slam effect
+            const slamMessage = await sdk.messages.sendMessage({
+                chatGuid: CHAT_GUID,
+                message: "BAM!",
+                effectId: MESSAGE_EFFECTS.slam,
+            });
+            console.log(`slam: ${slamMessage.guid}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            // Invisible ink effect
+            const invisibleMessage = await sdk.messages.sendMessage({
+                chatGuid: CHAT_GUID,
+                message: "Secret message!",
+                effectId: MESSAGE_EFFECTS.invisible_ink,
+            });
+            console.log(`invisible ink: ${invisibleMessage.guid}`);
 
             console.log("\nAvailable effects:");
             console.log(JSON.stringify(MESSAGE_EFFECTS, null, 2));
