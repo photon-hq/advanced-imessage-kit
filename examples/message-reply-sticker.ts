@@ -2,15 +2,15 @@ import path from "node:path";
 import type { AttachmentResponse } from "../types";
 import { createSDK, handleError } from "./utils";
 
-const CHAT_GUID = process.env.CHAT_GUID || "any;-;+16504444652";
-
+const CHAT_GUID = process.env.CHAT_GUID || "any;-;+1234567890";
 const STICKER_PATH = process.env.STICKER_PATH || path.join(__dirname, "test-image.png");
 
 async function main() {
     const sdk = createSDK();
 
     sdk.on("ready", async () => {
-        console.log("Sticker message example...\n");
+        console.log("Tapback Sticker Example\n");
+        console.log("This sends a sticker attached to an existing message bubble.\n");
 
         try {
             console.log("Sending a text message first...");
@@ -28,8 +28,8 @@ async function main() {
             const stickerMessage = await sdk.attachments.sendSticker({
                 chatGuid: CHAT_GUID,
                 filePath: STICKER_PATH,
-                selectedMessageGuid: textMessage.guid,
-                stickerX: 0, // Center horizontally
+                selectedMessageGuid: textMessage.guid, // Attach sticker to the text message
+                stickerX: 0.5, // Center horizontally
                 stickerY: 0.5, // Center vertically
                 stickerScale: 0.75, // 75% scale
                 stickerRotation: 0, // No rotation

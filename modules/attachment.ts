@@ -104,16 +104,16 @@ export class AttachmentModule {
             form.append("name", fileName);
             form.append("chatGuid", options.chatGuid);
             form.append("isSticker", "true");
-            form.append("method", "private-api");
+            form.append("method", "private-api"); // Sticker requires Private API
             if (options.selectedMessageGuid) {
                 form.append("selectedMessageGuid", options.selectedMessageGuid);
                 form.append("partIndex", "0");
+                form.append("stickerX", String(options.stickerX ?? 0.5));
+                form.append("stickerY", String(options.stickerY ?? 0.5));
+                form.append("stickerScale", String(options.stickerScale ?? 0.75));
+                form.append("stickerRotation", String(options.stickerRotation ?? 0));
+                form.append("stickerWidth", String(options.stickerWidth ?? 300));
             }
-            form.append("stickerX", String(options.stickerX ?? 0.5));
-            form.append("stickerY", String(options.stickerY ?? 0.5));
-            form.append("stickerScale", String(options.stickerScale ?? 0.75));
-            form.append("stickerRotation", String(options.stickerRotation ?? 0));
-            form.append("stickerWidth", String(options.stickerWidth ?? 300));
 
             const { data } = await this.http.post("/api/v1/message/attachment", form, {
                 headers: form.getHeaders(),

@@ -177,7 +177,7 @@ async function main() {
             console.log("");
 
             console.log("─".repeat(50));
-            console.log("📬 Recent Messages (all types):\n");
+            console.log("Recent Messages (all types):\n");
 
             messages.slice(0, 15).forEach((msg, i) => {
                 console.log(formatMessage(msg, i + 1));
@@ -187,7 +187,7 @@ async function main() {
             const regularMessages = messages.filter((m) => getMessageType(m) === "message");
             if (regularMessages.length > 0) {
                 console.log("─".repeat(50));
-                console.log("💬 Text Messages Only:\n");
+                console.log("Text Messages Only:\n");
                 regularMessages.slice(0, 5).forEach((msg, i) => {
                     console.log(formatMessage(msg, i + 1));
                     console.log("");
@@ -197,7 +197,7 @@ async function main() {
             const reactions = messages.filter((m) => getMessageType(m) === "reaction");
             if (reactions.length > 0) {
                 console.log("─".repeat(50));
-                console.log("❤️ Reactions Detail:\n");
+                console.log("Reactions Detail:\n");
 
                 const reactionCounts: Record<string, number> = {};
                 for (const r of reactions) {
@@ -222,7 +222,7 @@ async function main() {
             const pollsOnly = messages.filter((m) => getMessageType(m) === "poll");
             if (pollsOnly.length > 0) {
                 console.log("─".repeat(50));
-                console.log("📊 Polls Detail:\n");
+                console.log("Polls Detail:\n");
                 pollsOnly.slice(0, 3).forEach((msg, i) => {
                     console.log(formatMessage(msg, i + 1));
                     console.log("");
@@ -232,7 +232,7 @@ async function main() {
             const votesOnly = messages.filter((m) => getMessageType(m) === "poll-vote");
             if (votesOnly.length > 0) {
                 console.log("─".repeat(50));
-                console.log("🗳️ Poll Votes Detail:\n");
+                console.log("Poll Votes Detail:\n");
                 votesOnly.slice(0, 5).forEach((msg, i) => {
                     console.log(formatMessage(msg, i + 1));
                     console.log("");
