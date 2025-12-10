@@ -33,42 +33,42 @@ export class ChatModule {
     }
 
     async getChat(guid: string, options?: { with?: string[] }): Promise<ChatResponse> {
-        const response = await this.http.get(`/api/v1/chat/${guid}`, {
+        const response = await this.http.get(`/api/v1/chat/${encodeURIComponent(guid)}`, {
             params: options?.with ? { with: options.with.join(",") } : {},
         });
         return response.data.data;
     }
 
     async updateChat(guid: string, options: { displayName?: string }): Promise<ChatResponse> {
-        const response = await this.http.put(`/api/v1/chat/${guid}`, options);
+        const response = await this.http.put(`/api/v1/chat/${encodeURIComponent(guid)}`, options);
         return response.data.data;
     }
 
     async deleteChat(guid: string): Promise<void> {
-        await this.http.delete(`/api/v1/chat/${guid}`);
+        await this.http.delete(`/api/v1/chat/${encodeURIComponent(guid)}`);
     }
 
     async markChatRead(guid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${guid}/read`);
+        await this.http.post(`/api/v1/chat/${encodeURIComponent(guid)}/read`);
     }
 
     async markChatUnread(guid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${guid}/unread`);
+        await this.http.post(`/api/v1/chat/${encodeURIComponent(guid)}/unread`);
     }
 
     async leaveChat(guid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${guid}/leave`);
+        await this.http.post(`/api/v1/chat/${encodeURIComponent(guid)}/leave`);
     }
 
     async addParticipant(chatGuid: string, address: string): Promise<ChatResponse> {
-        const response = await this.http.post(`/api/v1/chat/${chatGuid}/participant`, {
+        const response = await this.http.post(`/api/v1/chat/${encodeURIComponent(chatGuid)}/participant`, {
             address,
         });
         return response.data.data;
     }
 
     async removeParticipant(chatGuid: string, address: string): Promise<ChatResponse> {
-        const response = await this.http.delete(`/api/v1/chat/${chatGuid}/participant`, {
+        const response = await this.http.delete(`/api/v1/chat/${encodeURIComponent(chatGuid)}/participant`, {
             data: { address },
         });
         return response.data.data;
@@ -93,7 +93,7 @@ export class ChatModule {
         if (options?.after !== undefined) params.after = options.after;
         if (options?.with) params.with = options.with.join(",");
 
-        const response = await this.http.get(`/api/v1/chat/${chatGuid}/message`, {
+        const response = await this.http.get(`/api/v1/chat/${encodeURIComponent(chatGuid)}/message`, {
             params,
         });
         return response.data.data;
@@ -105,17 +105,17 @@ export class ChatModule {
         const form = new FormData();
         form.append("icon", fileBuffer, fileName);
 
-        await this.http.post(`/api/v1/chat/${chatGuid}/icon`, form, {
+        await this.http.post(`/api/v1/chat/${encodeURIComponent(chatGuid)}/icon`, form, {
             headers: form.getHeaders(),
         });
     }
 
     async removeGroupIcon(chatGuid: string): Promise<void> {
-        await this.http.delete(`/api/v1/chat/${chatGuid}/icon`);
+        await this.http.delete(`/api/v1/chat/${encodeURIComponent(chatGuid)}/icon`);
     }
 
     async getGroupIcon(chatGuid: string): Promise<Buffer> {
-        const response = await this.http.get(`/api/v1/chat/${chatGuid}/icon`, {
+        const response = await this.http.get(`/api/v1/chat/${encodeURIComponent(chatGuid)}/icon`, {
             responseType: "arraybuffer",
         });
         return Buffer.from(response.data);
@@ -132,11 +132,11 @@ export class ChatModule {
     }
 
     async startTyping(chatGuid: string): Promise<void> {
-        await this.http.post(`/api/v1/chat/${chatGuid}/typing`);
+        await this.http.post(`/api/v1/chat/${encodeURIComponent(chatGuid)}/typing`);
     }
 
     async stopTyping(chatGuid: string): Promise<void> {
-        await this.http.delete(`/api/v1/chat/${chatGuid}/typing`);
+        await this.http.delete(`/api/v1/chat/${encodeURIComponent(chatGuid)}/typing`);
     }
 
     async getBackground(chatGuid: string): Promise<{

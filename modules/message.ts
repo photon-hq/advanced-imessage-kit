@@ -37,7 +37,7 @@ export class MessageModule {
     }
 
     async getMessage(guid: string, options?: { with?: string[] }): Promise<MessageResponse> {
-        const response = await this.http.get(`/api/v1/message/${guid}`, {
+        const response = await this.http.get(`/api/v1/message/${encodeURIComponent(guid)}`, {
             params: options?.with ? { with: options.with.join(",") } : {},
         });
         return response.data.data;
@@ -121,7 +121,7 @@ export class MessageModule {
         partIndex?: number;
     }): Promise<MessageResponse> {
         return this.enqueueSend(async () => {
-            const response = await this.http.post(`/api/v1/message/${options.messageGuid}/edit`, {
+            const response = await this.http.post(`/api/v1/message/${encodeURIComponent(options.messageGuid)}/edit`, {
                 editedMessage: options.editedMessage,
                 backwardsCompatibilityMessage: options.backwardsCompatibilityMessage || options.editedMessage,
                 partIndex: options.partIndex ?? 0,
@@ -149,7 +149,7 @@ export class MessageModule {
 
     async unsendMessage(options: { messageGuid: string; partIndex?: number }): Promise<MessageResponse> {
         return this.enqueueSend(async () => {
-            const response = await this.http.post(`/api/v1/message/${options.messageGuid}/unsend`, {
+            const response = await this.http.post(`/api/v1/message/${encodeURIComponent(options.messageGuid)}/unsend`, {
                 partIndex: options.partIndex ?? 0,
             });
             return response.data.data;
@@ -157,14 +157,14 @@ export class MessageModule {
     }
 
     async notifyMessage(guid: string): Promise<void> {
-        await this.http.post(`/api/v1/message/${guid}/notify`);
+        await this.http.post(`/api/v1/message/${encodeURIComponent(guid)}/notify`);
     }
 
     async getEmbeddedMedia(guid: string): Promise<{
         path?: string;
         data?: string;
     }> {
-        const response = await this.http.get(`/api/v1/message/${guid}/embedded-media`);
+        const response = await this.http.get(`/api/v1/message/${encodeURIComponent(guid)}/embedded-media`);
         return response.data.data;
     }
 

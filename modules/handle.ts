@@ -26,7 +26,7 @@ export class HandleModule {
     }
 
     async getHandle(guid: string): Promise<any> {
-        const response = await this.http.get(`/api/v1/handle/${guid}`);
+        const response = await this.http.get(`/api/v1/handle/${encodeURIComponent(guid)}`);
         return response.data.data;
     }
 
@@ -38,7 +38,7 @@ export class HandleModule {
     }
 
     async getHandleFocusStatus(guid: string): Promise<string> {
-        const response = await this.http.get(`/api/v1/handle/${guid}/focus`);
+        const response = await this.http.get(`/api/v1/handle/${encodeURIComponent(guid)}/focus`);
         return response.data.data.status;
     }
 }
