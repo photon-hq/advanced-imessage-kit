@@ -176,9 +176,29 @@ export class MessageModule {
         sort?: "ASC" | "DESC";
         before?: number;
         after?: number;
-        matchType?: "contains" | "exact";
     }): Promise<MessageResponse[]> {
-        const response = await this.http.post("/api/v1/message/search", options);
+        // Use MessageRouter.query (POST /api/v1/message/query) and a message.text LIKE condition to perform server-side text search
+        const { query, chatGuid, offset, limit, sort, before, after } = options;
+
+        const where = [
+            {
+                statement: "message.text LIKE :text",
+                args: { text: `%${query}%` },
+            },
+        ];
+
+        const payload: Record<string, unknown> = {
+            where,
+        };
+
+        if (chatGuid) payload.chatGuid = chatGuid;
+        if (offset !== undefined) payload.offset = offset;
+        if (limit !== undefined) payload.limit = limit;
+        if (sort) payload.sort = sort;
+        if (before !== undefined) payload.before = before;
+        if (after !== undefined) payload.after = after;
+
+        const response = await this.http.post("/api/v1/message/query", payload);
         return response.data.data;
     }
 }
