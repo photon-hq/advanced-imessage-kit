@@ -71,7 +71,7 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
     // and auth-ok events occur, which would cause user callbacks to fire twice.
     private readyEmitted = false;
 
-    private constructor(config: ClientConfig = {}) {
+    constructor(config: ClientConfig = {}) {
         super();
 
         this.config = {
