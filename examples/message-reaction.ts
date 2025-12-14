@@ -35,6 +35,24 @@ async function main() {
                 messageGuid,
                 reaction: "laugh",
             });
+
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
+            // 👎 = dislike
+            await sdk.messages.sendReaction({
+                chatGuid: CHAT_GUID,
+                messageGuid,
+                reaction: "dislike",
+            });
+
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
+            // 👍 = like
+            await sdk.messages.sendReaction({
+                chatGuid: CHAT_GUID,
+                messageGuid,
+                reaction: "like",
+            });
         } catch (error) {
             handleError(error, "Failed to send reaction");
         }
