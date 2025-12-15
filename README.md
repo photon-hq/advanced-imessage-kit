@@ -657,7 +657,7 @@ import {
   parsePollVotes,
   getPollSummary,
   getOptionTextById,
-} from "@photon-ai/advanced-imessage-kit/lib/poll-utils";
+} from "@photon-ai/advanced-imessage-kit";
 
 sdk.on("new-message", (message) => {
   if (isPollMessage(message)) {

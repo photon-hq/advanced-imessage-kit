@@ -4,6 +4,7 @@ export { AdvancedIMessageKit, SDK } from "./client";
 export * from "./events";
 export { getLogger, setGlobalLogLevel } from "./lib/Loggable";
 export {
+    getOptionTextById,
     getPollOneLiner,
     getPollSummary,
     isPollMessage,
