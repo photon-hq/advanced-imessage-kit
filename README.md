@@ -24,6 +24,7 @@ Advanced iMessage Kit is a full-featured iMessage SDK for **reading**, **sending
 | [Reply to Messages](#send-messages)                        | Reply inline to a specific message            | `messages.sendMessage()`           | [message-reply.ts](./examples/message-reply.ts)                 |
 | [Message Effects](#send-messages)                          | Send with effects (confetti, fireworks, etc.) | `messages.sendMessage()`           | [message-effects.ts](./examples/message-effects.ts)             |
 | [Unsend Messages](#unsend-messages)                        | Retract a sent message                        | `messages.unsendMessage()`         | [message-unsend.ts](./examples/message-unsend.ts)               |
+| [Edit Messages](#edit-messages)                            | Edit a sent message                           | `messages.editMessage()`           | [message-edit.ts](./examples/message-edit.ts)                   |
 | [Send Tapbacks](#send-tapbacks)                            | React with ❤️ 👍 👎 😂 ‼️ ❓                  | `messages.sendReaction()`          | [message-reaction.ts](./examples/message-reaction.ts)           |
 | [Query Messages](#query-messages)                          | Search and filter message history             | `messages.getMessages()`           | [message-search.ts](./examples/message-search.ts)               |
 | [Message History](#get-chat-messages)                      | View messages, reactions, polls, stickers     | `chats.getChatMessages()`          | [message-history.ts](./examples/message-history.ts)             |
@@ -128,7 +129,7 @@ interface ClientConfig {
 
 ## Messages
 
-> Examples: [message-send.ts](./examples/message-send.ts) | [message-unsend.ts](./examples/message-unsend.ts) | [message-reaction.ts](./examples/message-reaction.ts) | [message-search.ts](./examples/message-search.ts)
+> Examples: [message-send.ts](./examples/message-send.ts) | [message-unsend.ts](./examples/message-unsend.ts) | [message-edit.ts](./examples/message-edit.ts) | [message-reaction.ts](./examples/message-reaction.ts) | [message-search.ts](./examples/message-search.ts)
 
 ### Send Messages
 
@@ -214,6 +215,23 @@ await sdk.messages.unsendMessage({
 ```
 
 > Example: [message-unsend.ts](./examples/message-unsend.ts)
+
+### Edit Messages
+
+```typescript
+const editedMessage = await sdk.messages.editMessage({
+  messageGuid: "message-guid-to-edit",
+  editedMessage: "New text content",
+  backwardsCompatibilityMessage: "New text content", // Optional, defaults to editedMessage
+  partIndex: 0, // Optional, defaults to 0
+});
+
+console.log(`Edited: ${editedMessage.guid}`);
+console.log(`New text: ${editedMessage.text}`);
+console.log(`Date edited: ${editedMessage.dateEdited}`);
+```
+
+> Example: [message-edit.ts](./examples/message-edit.ts)
 
 ### Send Tapbacks
 
@@ -898,6 +916,7 @@ bun run examples/<filename>.ts
 | ----------------------------------------------------- | ----------------- |
 | [message-reply.ts](./examples/message-reply.ts)       | Reply to messages |
 | [message-unsend.ts](./examples/message-unsend.ts)     | Unsend messages   |
+| [message-edit.ts](./examples/message-edit.ts)         | Edit messages     |
 | [message-reaction.ts](./examples/message-reaction.ts) | Send Tapbacks     |
 | [message-effects.ts](./examples/message-effects.ts)   | Message effects   |
 | [message-search.ts](./examples/message-search.ts)     | Search messages   |
