@@ -42,7 +42,7 @@ Advanced iMessage Kit is a full-featured iMessage SDK for **reading**, **sending
 | [Server Info](#get-server-info)                            | Get server status and config                  | `server.getServerInfo()`           | [server-info.ts](./examples/server-info.ts)                     |
 | [Message Statistics](#message-statistics)                  | Get message counts and analytics              | `server.getMessageStats()`         | [message-stats.ts](./examples/message-stats.ts)                 |
 | [Create Polls](#create-polls)                              | Create interactive polls in chat              | `polls.create()`                   | [poll-create.ts](./examples/poll-create.ts)                     |
-| [Vote on Polls](#vote-on-polls)                            | Vote or unvote on poll options                | `polls.vote()`                     | [poll-create.ts](./examples/poll-create.ts)                     |
+| [Vote on Polls](#vote-on-polls)                            | Vote or unvote on poll options                | `polls.vote()`                     | [poll-vote.ts](./examples/poll-vote.ts)                         |
 | [Add Poll Options](#add-poll-options)                      | Add options to existing polls                 | `polls.addOption()`                | [poll-add-option.ts](./examples/poll-add-option.ts)             |
 | [Find My Friends](#find-my-friends) _(WIP)_                | Get friends' locations                        | `icloud.getFindMyFriends()`        | [findmy-friends.ts](./examples/findmy-friends.ts)               |
 | [Real-time Events](#real-time-events)                      | Listen for new messages, typing, etc.         | `sdk.on()`                         | [listen-simple.ts](./examples/listen-simple.ts)                 |
@@ -617,7 +617,7 @@ const logs = await sdk.server.getServerLogs(100); // Get last 100 logs
 
 ## Polls
 
-> Examples: [poll-create.ts](./examples/poll-create.ts) | [poll-add-option.ts](./examples/poll-add-option.ts)
+> Examples: [poll-create.ts](./examples/poll-create.ts) | [poll-vote.ts](./examples/poll-vote.ts) | [poll-add-option.ts](./examples/poll-add-option.ts)
 
 ### Create Polls
 
@@ -662,6 +662,8 @@ await sdk.polls.unvote({
   optionIdentifier: "option-uuid",
 });
 ```
+
+> Example: [poll-vote.ts](./examples/poll-vote.ts)
 
 ### Parse Poll Messages
 
@@ -952,6 +954,7 @@ bun run examples/<filename>.ts
 | File                                                | Description      |
 | --------------------------------------------------- | ---------------- |
 | [poll-create.ts](./examples/poll-create.ts)         | Create polls     |
+| [poll-vote.ts](./examples/poll-vote.ts)             | Vote on polls    |
 | [poll-add-option.ts](./examples/poll-add-option.ts) | Add poll options |
 
 ### Server & Advanced
