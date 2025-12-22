@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { AxiosInstance } from "axios";
+import { createChatWithMessage, extractAddress, extractService, isChatNotExistError } from "../lib/auto-create-chat";
 import type { MessageResponse, SendMessageOptions } from "../types";
 
 export class MessageModule {
@@ -12,8 +13,29 @@ export class MessageModule {
         return this.enqueueSend(async () => {
             const tempGuid = options.tempGuid || randomUUID();
             const payload = { ...options, tempGuid };
-            const response = await this.http.post("/api/v1/message/text", payload);
-            return response.data.data;
+
+            try {
+                const response = await this.http.post("/api/v1/message/text", payload);
+                return response.data.data;
+            } catch (error: unknown) {
+                if (!isChatNotExistError(error)) throw error;
+
+                const address = extractAddress(options.chatGuid);
+                if (!address) throw error;
+
+                const service = extractService(options.chatGuid);
+
+                await createChatWithMessage({
+                    http: this.http,
+                    address,
+                    message: options.message,
+                    tempGuid,
+                    subject: options.subject,
+                    effectId: options.effectId,
+                    service,
+                });
+                return { guid: tempGuid, text: options.message, dateCreated: Date.now() } as MessageResponse;
+            }
         });
     }
 
