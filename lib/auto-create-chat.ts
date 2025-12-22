@@ -25,6 +25,20 @@ export function extractAddress(chatGuid: string): string | undefined {
 }
 
 /**
+ * Extracts the service type from a chatGuid.
+ * Expected format: "service;-;address" or "service;+;groupId"
+ * e.g., "iMessage;-;+1234567890" -> "iMessage"
+ *       "SMS;-;+1234567890" -> "SMS"
+ *       "any;-;+1234567890" -> undefined (let server decide)
+ */
+export function extractService(chatGuid: string): "iMessage" | "SMS" | undefined {
+    const prefix = chatGuid.split(";")[0]?.toLowerCase();
+    if (prefix === "imessage") return "iMessage";
+    if (prefix === "sms") return "SMS";
+    return undefined;
+}
+
+/**
  * Creates a chat with an initial message.
  * Returns the created chat's GUID.
  */
@@ -35,8 +49,9 @@ export async function createChatWithMessage(options: {
     tempGuid?: string;
     subject?: string;
     effectId?: string;
+    service?: "iMessage" | "SMS";
 }): Promise<string> {
-    const { http, address, message, tempGuid, subject, effectId } = options;
+    const { http, address, message, tempGuid, subject, effectId, service } = options;
     try {
         const response = await http.post("/api/v1/chat/new", {
             addresses: [address],
@@ -44,12 +59,12 @@ export async function createChatWithMessage(options: {
             tempGuid,
             subject,
             effectId,
+            ...(service && { service }),
         });
         return response.data.data?.guid;
     } catch (error) {
         throw new Error(
-            `Failed to create chat with address "${address}": ${
-                error instanceof Error ? error.message : String(error)
+            `Failed to create chat with address "${address}": ${error instanceof Error ? error.message : String(error)
             }`,
         );
     }
