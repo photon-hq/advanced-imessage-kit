@@ -1,51 +1,44 @@
-import { createSDK, handleError } from "./utils";
+import type { FindMyLocationItem } from "../types/findmy";
+import { createSDK } from "./utils";
+
+const TARGET_HANDLE = process.env.TARGET_HANDLE || "+1234567890";
+
+function formatLocation(loc: FindMyLocationItem, indent = ""): string {
+    const lines = [
+        `${indent}Coordinates: ${loc.coordinates[0]}, ${loc.coordinates[1]}`,
+        `${indent}Maps: https://maps.google.com/?q=${loc.coordinates[0]},${loc.coordinates[1]}`,
+    ];
+    if (loc.long_address) lines.push(`${indent}Address: ${loc.long_address}`);
+    if (loc.expiry) {
+        const remaining = Math.floor((loc.expiry - Date.now()) / 60000);
+        lines.push(`${indent}Expires in: ${remaining} minutes`);
+    }
+    return lines.join("\n");
+}
 
 async function main() {
     const sdk = createSDK();
-
-    sdk.on("ready", async () => {
-        try {
-            const friends = await sdk.icloud.getFindMyFriends();
-
-            if (friends?.length) {
-                console.log(`${friends.length} friends\n`);
-
-                friends.forEach((friend, i) => {
-                    console.log(`${i + 1}. ${friend.name || "unknown"} (${friend.id})`);
-                    if (friend.location) {
-                        const { latitude, longitude, horizontalAccuracy, timestamp } = friend.location;
-                        console.log(`   ${latitude}, ${longitude} (${horizontalAccuracy || "?"}m)`);
-                        if (timestamp) {
-                            console.log(`   ${new Date(timestamp).toLocaleString()}`);
-                        }
-                    } else {
-                        console.log("   no location");
-                    }
-                    console.log();
-                });
-            } else {
-                console.log("no friends\n");
-            }
-        } catch (error) {
-            handleError(error, "Failed to fetch Find My data");
-        }
-
-        await sdk.close();
-        process.exit(0);
-    });
-
-    sdk.on("new-findmy-location", (data) => {
-        const handle = data.handle || "Unknown";
-        const [latitude, longitude] = data.coordinates;
-        const address = data.short_address || data.long_address || "No address";
-
-        console.log(`\nUpdate for ${handle}`);
-        console.log(`  Location: ${latitude}, ${longitude}`);
-        console.log(`  Address: ${address}`);
-        console.log(`  Status: ${data.status}`);
-    });
-
     await sdk.connect();
+
+    const locations = await sdk.icloud.refreshFindMyFriends();
+
+    // Check target handle
+    const target = locations.find((l) => l.handle === TARGET_HANDLE);
+    console.log(`\nTarget: ${TARGET_HANDLE}\n`);
+    if (target) {
+        console.log(formatLocation(target, "  "));
+    } else {
+        console.log("  Not sharing location");
+    }
+
+    // List all friends
+    console.log(`\nAll Friends (${locations.length}):`);
+    for (const loc of locations) {
+        console.log(`\n  ${loc.handle}`);
+        console.log(formatLocation(loc, "    "));
+    }
+
+    process.exit(0);
 }
 
 main().catch(console.error);
