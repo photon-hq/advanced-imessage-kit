@@ -6,6 +6,7 @@ export interface FindMyLocationItem {
     subtitle: string | null;
     title: string | null;
     last_updated: number;
-    is_locating_in_progress: 0 | 1;
+    is_locating_in_progress: 0 | 1 | boolean;
     status: "legacy" | "live" | "shallow";
+    expiry?: number | null;
 }
