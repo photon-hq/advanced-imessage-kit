@@ -747,11 +747,32 @@ sdk.on("new-message", (message) => {
 ### Find My Friends
 
 ```typescript
-// Get friends' locations
-const friends = await sdk.icloud.getFindMyFriends();
+// Refresh and get friends' locations
+const locations = await sdk.icloud.refreshFindMyFriends();
 
-// Refresh location data
-await sdk.icloud.refreshFindMyFriends();
+// Each location contains:
+// - handle: phone number or email
+// - coordinates: [latitude, longitude]
+// - long_address: street address (optional)
+// - expiry: timestamp when location expires (optional)
+
+// Find specific friend
+const friend = locations.find((loc) => loc.handle === "+1234567890");
+if (friend) {
+  console.log(
+    `Coordinates: ${friend.coordinates[0]}, ${friend.coordinates[1]}`
+  );
+  console.log(
+    `Maps: https://maps.google.com/?q=${friend.coordinates[0]},${friend.coordinates[1]}`
+  );
+  if (friend.long_address) console.log(`Address: ${friend.long_address}`);
+}
+
+// List all friends
+console.log(`All Friends (${locations.length}):`);
+for (const loc of locations) {
+  console.log(`${loc.handle}: ${loc.coordinates[0]}, ${loc.coordinates[1]}`);
+}
 ```
 
 > Example: [findmy-friends.ts](./examples/findmy-friends.ts)
