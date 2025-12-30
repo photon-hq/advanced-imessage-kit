@@ -23,6 +23,7 @@ Advanced iMessage Kit is a full-featured iMessage SDK for **reading**, **sending
 | [Send Messages](#send-messages)                            | Send text messages to any contact             | `messages.sendMessage()`           | [message-send.ts](./examples/message-send.ts)                   |
 | [Reply to Messages](#send-messages)                        | Reply inline to a specific message            | `messages.sendMessage()`           | [message-reply.ts](./examples/message-reply.ts)                 |
 | [Message Effects](#send-messages)                          | Send with effects (confetti, fireworks, etc.) | `messages.sendMessage()`           | [message-effects.ts](./examples/message-effects.ts)             |
+| [Schedule Messages](#scheduled-messages)                   | Send once or on a recurring schedule          | `scheduledMessages.createScheduledMessage()` | [scheduled-message-once.ts](./examples/scheduled-message-once.ts) |
 | [Unsend Messages](#unsend-messages)                        | Retract a sent message                        | `messages.unsendMessage()`         | [message-unsend.ts](./examples/message-unsend.ts)               |
 | [Edit Messages](#edit-messages)                            | Edit a sent message                           | `messages.editMessage()`           | [message-edit.ts](./examples/message-edit.ts)                   |
 | [Send Tapbacks](#send-tapbacks)                            | React with ❤️ 👍 👎 😂 ‼️ ❓                  | `messages.sendReaction()`          | [message-reaction.ts](./examples/message-reaction.ts)           |
@@ -262,6 +263,69 @@ await sdk.messages.notifyMessage("message-guid");
 
 // Get embedded media
 const media = await sdk.messages.getEmbeddedMedia("message-guid");
+```
+
+---
+
+## Scheduled Messages
+
+> Examples: [scheduled-message-once.ts](./examples/scheduled-message-once.ts) | [scheduled-message-recurring.ts](./examples/scheduled-message-recurring.ts) | [scheduled-message-manage.ts](./examples/scheduled-message-manage.ts)
+
+### Schedule a one-time message
+
+```typescript
+const scheduled = await sdk.scheduledMessages.createScheduledMessage({
+  type: "send-message",
+  payload: {
+    chatGuid: "any;-;+1234567890",
+    message: "This is a scheduled message!",
+    method: "apple-script",
+  },
+  scheduledFor: Date.now() + 3 * 1000,
+  schedule: { type: "once" },
+});
+```
+
+### Schedule a recurring message
+
+```typescript
+const tomorrow9am = new Date();
+tomorrow9am.setDate(tomorrow9am.getDate() + 1);
+tomorrow9am.setHours(9, 0, 0, 0);
+
+const daily = await sdk.scheduledMessages.createScheduledMessage({
+  type: "send-message",
+  payload: {
+    chatGuid: "any;-;+1234567890",
+    message: "Good morning!",
+    method: "apple-script",
+  },
+  scheduledFor: tomorrow9am.getTime(),
+  schedule: {
+    type: "recurring",
+    intervalType: "daily", // hourly, daily, weekly, monthly, yearly
+    interval: 1,
+  },
+});
+```
+
+### Manage scheduled messages
+
+```typescript
+const scheduledMessages = await sdk.scheduledMessages.getScheduledMessages();
+
+const updated = await sdk.scheduledMessages.updateScheduledMessage("scheduled-id", {
+  type: "send-message",
+  payload: {
+    chatGuid: "any;-;+1234567890",
+    message: "Updated message!",
+    method: "apple-script",
+  },
+  scheduledFor: Date.now() + 10 * 60 * 1000,
+  schedule: { type: "once" },
+});
+
+await sdk.scheduledMessages.deleteScheduledMessage("scheduled-id");
 ```
 
 ---
