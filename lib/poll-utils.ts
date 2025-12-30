@@ -53,15 +53,15 @@ function extractDataUrl(payloadData: NodeJS.Dict<any>[] | null | undefined): str
     const objects = payload.$objects;
     if (Array.isArray(objects)) {
         for (const obj of objects) {
+            if (typeof obj === "string" && obj.startsWith("data:,")) {
+                return obj;
+            }
             if (typeof obj === "object" && obj !== null) {
                 if (obj["NS.relative"] && typeof obj["NS.relative"] === "object") {
                     const relativeObj = objects[obj["NS.relative"].UID];
                     if (typeof relativeObj === "string" && relativeObj.startsWith("data:,")) {
                         return relativeObj;
                     }
-                }
-                if (typeof obj === "string" && obj.startsWith("data:,")) {
-                    return obj;
                 }
             }
         }
