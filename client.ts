@@ -59,6 +59,9 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
     // This is especially problematic when the polling transport causes connection issues.
     private processedMessages = new Set<string>();
 
+    // Last message timestamp for reconnect recovery
+    private lastMessageTime = 0;
+
     // Send queue for sequential message delivery
     //
     // Purpose: Ensure all outgoing messages (text, attachments, stickers, etc.) from
@@ -231,7 +234,7 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
                 //
                 // Solution: Use GUID as unique identifier for deduplication
                 if (eventName === "new-message" && args.length > 0) {
-                    const message = args[0] as { guid?: string };
+                    const message = args[0] as { guid?: string; dateCreated?: number };
                     if (message?.guid) {
                         // Check if this message has already been processed
                         if (this.processedMessages.has(message.guid)) {
@@ -240,6 +243,9 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
                         }
                         // Mark message as processed
                         this.processedMessages.add(message.guid);
+                        if (message.dateCreated && message.dateCreated > this.lastMessageTime) {
+                            this.lastMessageTime = message.dateCreated;
+                        }
                     }
                 }
 
@@ -279,10 +285,11 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
         });
 
         // Listen for authentication success
-        this.socket.on("auth-ok", () => {
+        this.socket.on("auth-ok", async () => {
             this.logger.info("Authentication successful");
             if (!this.readyEmitted) {
                 this.readyEmitted = true;
+                await this.recoverMissedMessages();
                 this.emit("ready");
             }
         });
@@ -293,13 +300,14 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
             this.emit("error", new Error(`Authentication failed: ${error.message}`));
         });
 
-        this.socket.on("connect", () => {
+        this.socket.on("connect", async () => {
             this.logger.info("Connected to iMessage server, waiting for authentication...");
             // If no apiKey, assume legacy server that doesn't require auth - emit ready immediately
             if (!this.config.apiKey) {
                 this.logger.info("No API key provided, skipping authentication (legacy server mode)");
                 if (!this.readyEmitted) {
                     this.readyEmitted = true;
+                    await this.recoverMissedMessages();
                     this.emit("ready");
                 }
             }
@@ -312,6 +320,37 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
 
     async close() {
         this.socket.disconnect();
+    }
+
+    private async recoverMissedMessages() {
+        if (this.lastMessageTime <= 0) return;
+
+        try {
+            const after = this.lastMessageTime;
+            const messages = await this.messages.getMessages({
+                after,
+                sort: "ASC",
+                limit: 100,
+            });
+
+            if (messages.length === 0) {
+                this.logger.debug("No missed messages to recover");
+                return;
+            }
+
+            this.logger.info(`Recovering ${messages.length} missed message(s)`);
+            for (const msg of messages) {
+                if (msg.guid && !this.processedMessages.has(msg.guid)) {
+                    this.processedMessages.add(msg.guid);
+                    if (msg.dateCreated && msg.dateCreated > this.lastMessageTime) {
+                        this.lastMessageTime = msg.dateCreated;
+                    }
+                    super.emit("new-message", msg);
+                }
+            }
+        } catch (e) {
+            this.logger.warn(`Failed to recover missed messages: ${e}`);
+        }
     }
 
     /**
