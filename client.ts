@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import axios, { type AxiosInstance } from "axios";
 import io from "socket.io-client";
-import { getLogger, setGlobalLogLevel } from "./lib/Loggable";
+import { getLogger, setGlobalLogLevel, setGlobalLogToFile } from "./lib/Loggable";
 import type { LogLevel } from "./lib/Logger";
 import {
     AttachmentModule,
@@ -87,8 +87,13 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
         this.config = {
             serverUrl: "http://localhost:1234",
             logLevel: "info",
+            logToFile: true,
             ...config,
         };
+
+        if (this.config.logToFile === false) {
+            setGlobalLogToFile(false);
+        }
 
         if (this.config.logLevel) {
             setGlobalLogLevel(this.config.logLevel as LogLevel);

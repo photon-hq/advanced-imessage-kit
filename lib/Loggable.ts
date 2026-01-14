@@ -4,6 +4,7 @@ import { Logger } from "./Logger";
 
 const loggers: Record<string, Logger> = {};
 let globalLogLevel: LogLevel = "info";
+let globalLogToFile = true;
 
 export const setGlobalLogLevel = (level: LogLevel) => {
     globalLogLevel = level;
@@ -12,10 +13,14 @@ export const setGlobalLogLevel = (level: LogLevel) => {
     });
 };
 
+export const setGlobalLogToFile = (logToFile: boolean) => {
+    globalLogToFile = logToFile;
+};
+
 export const getLogger = (tag: string) => {
     let logger = loggers[tag];
     if (!logger) {
-        logger = new Logger(tag, globalLogLevel);
+        logger = new Logger(tag, globalLogLevel, globalLogToFile);
         loggers[tag] = logger;
     }
 

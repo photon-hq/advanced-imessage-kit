@@ -16,11 +16,16 @@ export class Logger extends EventEmitter {
         this.logLevel = level;
 
         if (logToFile) {
-            const logDir = path.join(os.homedir(), "Library", "Logs", "AdvancedIMessageKit");
-            if (!fs.existsSync(logDir)) {
-                fs.mkdirSync(logDir, { recursive: true });
+            try {
+                const logDir = path.join(os.homedir(), "Library", "Logs", "AdvancedIMessageKit");
+                if (!fs.existsSync(logDir)) {
+                    fs.mkdirSync(logDir, { recursive: true });
+                }
+                this.logFile = path.join(logDir, "sdk.log");
+            } catch {
+                // Silently disable file logging if directory creation fails
+                // (e.g., read-only filesystem)
             }
-            this.logFile = path.join(logDir, "sdk.log");
         }
     }
 
