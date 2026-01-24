@@ -94,6 +94,7 @@ interface ClientConfig {
   serverUrl?: string; // Server URL, defaults to "http://localhost:1234"
   apiKey?: string; // API key (if server requires authentication)
   logLevel?: "debug" | "info" | "warn" | "error"; // Log level, defaults to "info"
+  logToFile?: boolean; // Enable writing logs to ~/Library/Logs/AdvancedIMessageKit (default true)
 }
 ```
 
