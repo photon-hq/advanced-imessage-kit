@@ -102,4 +102,5 @@ export type MessageResponse = {
     didNotifyRecipient?: boolean;
     shareStatus?: number | null;
     shareDirection?: number | null;
+    destinationCallerID?: string | null;
 };
