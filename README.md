@@ -208,6 +208,11 @@ const results = await sdk.messages.searchMessages({
 const total = await sdk.messages.getMessageCount();
 const sent = await sdk.messages.getSentMessageCount();
 const updated = await sdk.messages.getUpdatedMessageCount();
+
+const message = await sdk.messages.getMessage("message-guid");
+if (message.destinationCallerId) {
+  console.log(`Sent from: ${message.destinationCallerId}`);
+}
 ```
 
 ### Unsend Messages
