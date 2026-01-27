@@ -23,6 +23,7 @@ Advanced iMessage Kit is a full-featured iMessage SDK for **reading**, **sending
 | [Send Messages](#send-messages)                            | Send text messages to any contact             | `messages.sendMessage()`                     | [message-send.ts](./examples/message-send.ts)                     |
 | [Reply to Messages](#send-messages)                        | Reply inline to a specific message            | `messages.sendMessage()`                     | [message-reply.ts](./examples/message-reply.ts)                   |
 | [Message Effects](#send-messages)                          | Send with effects (confetti, fireworks, etc.) | `messages.sendMessage()`                     | [message-effects.ts](./examples/message-effects.ts)               |
+| [Send Rich Links](#send-messages)                          | Send URLs with rich link previews             | `messages.sendMessage()`                     | [message-rich-link.ts](./examples/message-rich-link.ts)           |
 | [Schedule Messages](#scheduled-messages)                   | Send once or on a recurring schedule          | `scheduledMessages.createScheduledMessage()` | [scheduled-message-once.ts](./examples/scheduled-message-once.ts) |
 | [Unsend Messages](#unsend-messages)                        | Retract a sent message                        | `messages.unsendMessage()`                   | [message-unsend.ts](./examples/message-unsend.ts)                 |
 | [Edit Messages](#edit-messages)                            | Edit a sent message                           | `messages.editMessage()`                     | [message-edit.ts](./examples/message-edit.ts)                     |
@@ -135,7 +136,7 @@ interface ClientConfig {
 
 ## Messages
 
-> Examples: [message-send.ts](./examples/message-send.ts) | [message-unsend.ts](./examples/message-unsend.ts) | [message-edit.ts](./examples/message-edit.ts) | [message-reaction.ts](./examples/message-reaction.ts) | [message-search.ts](./examples/message-search.ts)
+> Examples: [message-send.ts](./examples/message-send.ts) | [message-unsend.ts](./examples/message-unsend.ts) | [message-edit.ts](./examples/message-edit.ts) | [message-reaction.ts](./examples/message-reaction.ts) | [message-rich-link.ts](./examples/message-rich-link.ts) | [message-search.ts](./examples/message-search.ts)
 
 ### Send Messages
 
@@ -159,6 +160,13 @@ await sdk.messages.sendMessage({
   chatGuid: "iMessage;-;+1234567890",
   message: "This is a reply",
   selectedMessageGuid: "original-message-guid",
+});
+
+// Send a rich link preview
+await sdk.messages.sendMessage({
+  chatGuid: "iMessage;-;+1234567890",
+  message: "https://photon.codes/",
+  richLink: true,
 });
 ```
 
