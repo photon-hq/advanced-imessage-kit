@@ -10,6 +10,7 @@ export interface SendMessageOptions {
     effectId?: string;
     selectedMessageGuid?: string;
     partIndex?: number;
+    richLink?: boolean;
 }
 
 export interface MessageData {
