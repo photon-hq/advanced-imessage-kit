@@ -14,7 +14,7 @@ export class HandleModule {
     }> {
         const body: Record<string, any> = {};
         if (options?.address) body.address = options.address;
-        if (options?.with) body.with = options.with.join(",");
+        if (options?.with) body.with = options.with;
         if (options?.offset !== undefined) body.offset = options.offset;
         if (options?.limit !== undefined) body.limit = options.limit;
 
