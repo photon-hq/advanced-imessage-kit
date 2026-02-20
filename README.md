@@ -49,6 +49,7 @@ Advanced iMessage Kit is a full-featured iMessage SDK for **reading**, **sending
 | [Vote on Polls](#vote-on-polls)                            | Vote or unvote on poll options                | `polls.vote()`                               | [poll-vote.ts](./examples/poll-vote.ts)                                         |
 | [Add Poll Options](#add-poll-options)                      | Add options to existing polls                 | `polls.addOption()`                          | [poll-add-option.ts](./examples/poll-add-option.ts)                             |
 | [Find My Friends](#find-my-friends)                        | Get friends' locations                        | `icloud.refreshFindMyFriends()`              | [findmy-friends.ts](./examples/findmy-friends.ts)                               |
+| [Find My Watch](#find-my-watch)                            | Watch friends' location changes in real-time  | `icloud.refreshFindMyFriends()`              | [findmy-watch.ts](./examples/findmy-watch.ts)                                   |
 | [Set Chat Background](#chat-background)                    | Set custom background image for chat          | `chats.setBackground()`                      | [background-set.ts](./examples/background-set.ts)                               |
 | [Remove Chat Background](#chat-background)                 | Remove background from chat                   | `chats.removeBackground()`                   | [background-remove.ts](./examples/background-remove.ts)                         |
 | [Real-time Events](#real-time-events)                      | Listen for new messages, typing, etc.         | `sdk.on()`                                   | [listen-simple.ts](./examples/listen-simple.ts)                                 |
@@ -337,7 +338,7 @@ const updated = await sdk.scheduledMessages.updateScheduledMessage(
     },
     scheduledFor: Date.now() + 10 * 60 * 1000,
     schedule: { type: "once" },
-  }
+  },
 );
 
 await sdk.scheduledMessages.deleteScheduledMessage("scheduled-id");
@@ -595,9 +596,8 @@ const buffer = await sdk.attachments.downloadAttachment("attachment-guid", {
 });
 
 // Download Live Photo video
-const liveBuffer = await sdk.attachments.downloadAttachmentLive(
-  "attachment-guid"
-);
+const liveBuffer =
+  await sdk.attachments.downloadAttachmentLive("attachment-guid");
 
 // Get blurhash (for placeholders)
 const blurhash = await sdk.attachments.getAttachmentBlurhash("attachment-guid");
@@ -686,11 +686,11 @@ Check if a phone/email supports iMessage or FaceTime:
 // First parameter is the address (phone or email), not handle guid
 const hasIMessage = await sdk.handles.getHandleAvailability(
   "+1234567890",
-  "imessage"
+  "imessage",
 );
 const hasFaceTime = await sdk.handles.getHandleAvailability(
   "+1234567890",
-  "facetime"
+  "facetime",
 );
 
 // Choose service based on availability
@@ -852,7 +852,7 @@ sdk.on("new-message", (message) => {
 
 ## iCloud
 
-> Example: [findmy-friends.ts](./examples/findmy-friends.ts)
+> Examples: [findmy-friends.ts](./examples/findmy-friends.ts) | [findmy-watch.ts](./examples/findmy-watch.ts)
 
 ### Find My Friends
 
@@ -870,10 +870,10 @@ const locations = await sdk.icloud.refreshFindMyFriends();
 const friend = locations.find((loc) => loc.handle === "+1234567890");
 if (friend) {
   console.log(
-    `Coordinates: ${friend.coordinates[0]}, ${friend.coordinates[1]}`
+    `Coordinates: ${friend.coordinates[0]}, ${friend.coordinates[1]}`,
   );
   console.log(
-    `Maps: https://maps.google.com/?q=${friend.coordinates[0]},${friend.coordinates[1]}`
+    `Maps: https://maps.google.com/?q=${friend.coordinates[0]},${friend.coordinates[1]}`,
   );
   if (friend.long_address) console.log(`Address: ${friend.long_address}`);
 }
@@ -886,6 +886,37 @@ for (const loc of locations) {
 ```
 
 > Example: [findmy-friends.ts](./examples/findmy-friends.ts)
+
+### Find My Watch
+
+Watch friends' location changes in real-time. Fetches initial locations on connect, then listens for live updates via the `new-findmy-location` event (server auto-refreshes every 30s):
+
+```typescript
+import type { FindMyLocationItem } from "@photon-ai/advanced-imessage-kit";
+
+// Fetch initial locations on ready
+sdk.on("ready", async () => {
+  const locations = await sdk.icloud.refreshFindMyFriends();
+  for (const loc of locations) {
+    console.log(`${loc.handle}`);
+    console.log(`  Coordinates: ${loc.coordinates[0]}, ${loc.coordinates[1]}`);
+    console.log(
+      `  Maps: https://maps.google.com/?q=${loc.coordinates[0]},${loc.coordinates[1]}`,
+    );
+    if (loc.long_address) console.log(`  Address: ${loc.long_address}`);
+  }
+});
+
+// Listen for real-time location updates
+sdk.on("new-findmy-location", (location: FindMyLocationItem) => {
+  console.log(`${location.handle} updated:`);
+  console.log(
+    `  Coordinates: ${location.coordinates[0]}, ${location.coordinates[1]}`,
+  );
+});
+```
+
+> Example: [findmy-watch.ts](./examples/findmy-watch.ts)
 
 ---
 
@@ -1132,6 +1163,7 @@ bun run examples/<filename>.ts
 | [server-info.ts](./examples/server-info.ts)       | Server info and logs |
 | [message-stats.ts](./examples/message-stats.ts)   | Message statistics   |
 | [findmy-friends.ts](./examples/findmy-friends.ts) | Find My Friends      |
+| [findmy-watch.ts](./examples/findmy-watch.ts)     | Find My Watch        |
 | [auto-reply-hey.ts](./examples/auto-reply-hey.ts) | Auto reply bot       |
 
 ---

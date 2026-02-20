@@ -226,6 +226,7 @@ export class AdvancedIMessageKit extends EventEmitter implements TypedEventEmitt
             "new-server",
             "incoming-facetime",
             "ft-call-status-changed",
+            "new-findmy-location",
             "hello-world",
         ];
 
