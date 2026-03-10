@@ -14,13 +14,10 @@
 
 Advanced iMessage Kit is a full-featured iMessage SDK for **reading**, **sending**, and **automating** iMessage conversations on macOS. Perfect for building **AI agents**, **automation tools**, and **chat applications**.
 
----
-
 ## Enterprise
 
 **Advanced iMessage Kit** is the **enterprise edition** provided by **[Photon](https://photon.codes)**.
 
-### Enterprise Features
 - **Provisioned iMessage Numbers** – Dedicated numbers ready for production use
 - **Managed Hosting** – Fully managed infrastructure for reliability and scale  
 - **DevOps & Deployment Support** – Production setup, monitoring, and scaling  
@@ -34,8 +31,6 @@ https://photon.codes
 
 If you're looking for the **free/open-source version**, please use **[iMessage Kit](https://github.com/photon-hq/imessage-kit)** instead.
 
-
----
 
 ## Features
 
