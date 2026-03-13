@@ -25,7 +25,7 @@ export class ChatModule {
         service?: "iMessage" | "SMS";
         tempGuid?: string;
         subject?: string;
-        effectId?: string;
+        bubbleEffect?: string;
         attributedBody?: Record<string, unknown>;
     }): Promise<ChatResponse> {
         const response = await this.http.post("/api/v1/chat/new", options);

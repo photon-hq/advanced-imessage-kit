@@ -2,15 +2,71 @@ import type { Attachment, AttachmentResponse } from "./attachment";
 import type { Chat, ChatResponse } from "./chat";
 import type { Handle, HandleResponse } from "./handle";
 
+export interface TextStyle {
+    start: number;
+    end: number;
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    strikethrough?: boolean;
+}
+
+export type TextAnimation =
+    | "big"
+    | "small"
+    | "shake"
+    | "nod"
+    | "explode"
+    | "ripple"
+    | "bloom"
+    | "jitter";
+
+export type BubbleEffect =
+    | "slam"
+    | "loud"
+    | "gentle"
+    | "invisibleInk"
+    | "confetti"
+    | "lasers"
+    | "fireworks"
+    | "balloons"
+    | "hearts"
+    | "shootingStar"
+    | "celebration"
+    | "echo"
+    | "spotlight";
+
 export interface SendMessageOptions {
     chatGuid: string;
     message: string;
     tempGuid?: string;
     subject?: string;
-    effectId?: string;
     selectedMessageGuid?: string;
     partIndex?: number;
     richLink?: boolean;
+    textStyles?: TextStyle[];
+    textAnimation?: TextAnimation;
+    bubbleEffect?: BubbleEffect;
+}
+
+export interface SendIMessageAppOptions {
+    chatGuid: string;
+    balloonBundleId: string;
+    appName: string;
+    url: string;
+    ldtext?: string;
+    layoutClass?: string;
+    userInfo?: {
+        caption?: string;
+        subcaption?: string;
+        "secondary-subcaption"?: string;
+        "tertiary-subcaption"?: string;
+        "image-title"?: string;
+        "image-subtitle"?: string;
+    };
+    appId?: number;
+    imageBase64?: string;
+    sessionIdentifier?: string;
 }
 
 export interface MessageData {

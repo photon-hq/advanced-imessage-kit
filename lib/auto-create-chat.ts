@@ -52,17 +52,17 @@ export async function createChatWithMessage(options: {
     message: string;
     tempGuid?: string;
     subject?: string;
-    effectId?: string;
+    bubbleEffect?: string;
     service?: "iMessage" | "SMS";
 }): Promise<string> {
-    const { http, address, message, tempGuid, subject, effectId, service } = options;
+    const { http, address, message, tempGuid, subject, bubbleEffect, service } = options;
     try {
         const response = await http.post("/api/v1/chat/new", {
             addresses: [address],
             message,
             tempGuid,
             subject,
-            effectId,
+            bubbleEffect,
             ...(service && { service }),
         });
         return response.data.data?.guid;
