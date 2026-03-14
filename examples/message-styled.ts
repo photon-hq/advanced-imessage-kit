@@ -1,6 +1,6 @@
 import { createSDK, handleError } from "./utils";
 
-const CHAT_GUID = process.env.CHAT_GUID || "any;-;+8618722049982";
+const CHAT_GUID = process.env.CHAT_GUID || "any;-;+1234567890";
 
 function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -50,8 +50,8 @@ async function main() {
                 message: "Bold here, italic there, underline everywhere",
                 textStyles: [
                     { start: 0, end: 9, bold: true },
-                    { start: 11, end: 22, italic: true },
-                    { start: 24, end: 45, underline: true },
+                    { start: 11, end: 23, italic: true },
+                    { start: 25, end: 45, underline: true },
                 ],
             });
             console.log(`multi-range: ${multiStyleMsg.guid}`);

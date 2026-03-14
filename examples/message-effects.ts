@@ -1,7 +1,7 @@
 import type { BubbleEffect } from "../types";
 import { createSDK, handleError } from "./utils";
 
-const CHAT_GUID = process.env.CHAT_GUID || "any;-;+13322593374";
+const CHAT_GUID = process.env.CHAT_GUID || "any;-;+1234567890";
 
 const BUBBLE_EFFECTS: BubbleEffect[] = [
     "confetti",
