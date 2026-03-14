@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import type { TextAnimation, TextStyle } from "../types";
+import type { BubbleEffect, TextAnimation, TextStyle } from "../types";
 
 /**
  * Checks if an error indicates that a chat does not exist.
@@ -53,7 +53,7 @@ export async function createChatWithMessage(options: {
     message: string;
     tempGuid?: string;
     subject?: string;
-    bubbleEffect?: string;
+    bubbleEffect?: BubbleEffect;
     textStyles?: TextStyle[];
     textAnimation?: TextAnimation;
     service?: "iMessage" | "SMS";

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AxiosInstance } from "axios";
 import FormData from "form-data";
-import type { ChatResponse, MessageResponse } from "../types";
+import type { BubbleEffect, ChatResponse, MessageResponse } from "../types";
 
 export class ChatModule {
     constructor(private readonly http: AxiosInstance) {}
@@ -25,7 +25,7 @@ export class ChatModule {
         service?: "iMessage" | "SMS";
         tempGuid?: string;
         subject?: string;
-        bubbleEffect?: string;
+        bubbleEffect?: BubbleEffect;
         attributedBody?: Record<string, unknown>;
     }): Promise<ChatResponse> {
         const response = await this.http.post("/api/v1/chat/new", options);
