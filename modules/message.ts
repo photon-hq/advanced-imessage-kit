@@ -31,7 +31,9 @@ export class MessageModule {
                     message: options.message,
                     tempGuid,
                     subject: options.subject,
-                    effectId: options.effectId,
+                    bubbleEffect: options.bubbleEffect,
+                    textStyles: options.textStyles,
+                    textAnimation: options.textAnimation,
                     service,
                 });
                 return { guid: tempGuid, text: options.message, dateCreated: Date.now() } as MessageResponse;

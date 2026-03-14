@@ -1,4 +1,5 @@
 import type { AxiosInstance } from "axios";
+import type { BubbleEffect, TextAnimation, TextStyle } from "../types";
 
 /**
  * Checks if an error indicates that a chat does not exist.
@@ -52,17 +53,21 @@ export async function createChatWithMessage(options: {
     message: string;
     tempGuid?: string;
     subject?: string;
-    effectId?: string;
+    bubbleEffect?: BubbleEffect;
+    textStyles?: TextStyle[];
+    textAnimation?: TextAnimation;
     service?: "iMessage" | "SMS";
 }): Promise<string> {
-    const { http, address, message, tempGuid, subject, effectId, service } = options;
+    const { http, address, message, tempGuid, subject, bubbleEffect, textStyles, textAnimation, service } = options;
     try {
         const response = await http.post("/api/v1/chat/new", {
             addresses: [address],
             message,
             tempGuid,
             subject,
-            effectId,
+            bubbleEffect,
+            textStyles,
+            textAnimation,
             ...(service && { service }),
         });
         return response.data.data?.guid;

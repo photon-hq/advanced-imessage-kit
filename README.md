@@ -39,6 +39,8 @@ If you're looking for the **free/open-source version**, please use **[iMessage K
 | [Send Messages](#send-messages)                            | Send text messages to any contact             | `messages.sendMessage()`                     | [message-send.ts](./examples/message-send.ts)                                   |
 | [Reply to Messages](#send-messages)                        | Reply inline to a specific message            | `messages.sendMessage()`                     | [message-reply.ts](./examples/message-reply.ts)                                 |
 | [Message Effects](#send-messages)                          | Send with effects (confetti, fireworks, etc.) | `messages.sendMessage()`                     | [message-effects.ts](./examples/message-effects.ts)                             |
+| [Text Styles](#text-styles--animations)                    | Bold, italic, underline, strikethrough        | `messages.sendMessage()`                     | [message-styled.ts](./examples/message-styled.ts)                               |
+| [Text Animations](#text-styles--animations)                | Per-character animations (shake, ripple, etc.)| `messages.sendMessage()`                     | [message-styled.ts](./examples/message-styled.ts)                               |
 | [Send Rich Links](#send-messages)                          | Send URLs with rich link previews             | `messages.sendMessage()`                     | [message-rich-link.ts](./examples/message-rich-link.ts)                         |
 | [Schedule Messages](#scheduled-messages)                   | Send once or on a recurring schedule          | `scheduledMessages.createScheduledMessage()` | [scheduled-message-once.ts](./examples/scheduled-message-once.ts)               |
 | [Unsend Messages](#unsend-messages)                        | Retract a sent message                        | `messages.unsendMessage()`                   | [message-unsend.ts](./examples/message-unsend.ts)                               |
@@ -206,6 +208,71 @@ await sdk.messages.sendMessage({
 | Invisible Ink | `com.apple.MobileSMS.expressivesend.invisibleink` |
 
 > Example: [message-effects.ts](./examples/message-effects.ts)
+
+### Text Styles & Animations
+
+Apply per-range text formatting and whole-message character animations (requires Private API):
+
+```typescript
+// Bold a portion of text
+await sdk.messages.sendMessage({
+  chatGuid: "iMessage;-;+1234567890",
+  message: "This is bold text",
+  textStyles: [{ start: 8, end: 12, bold: true }],
+});
+
+// Multiple styles in one message
+await sdk.messages.sendMessage({
+  chatGuid: "iMessage;-;+1234567890",
+  message: "Bold here, italic there",
+  textStyles: [
+    { start: 0, end: 9, bold: true },
+    { start: 11, end: 23, italic: true },
+  ],
+});
+
+// Character animation (applies to whole message)
+await sdk.messages.sendMessage({
+  chatGuid: "iMessage;-;+1234567890",
+  message: "Ripple wave!",
+  textAnimation: "ripple",
+});
+
+// Combine all three layers
+await sdk.messages.sendMessage({
+  chatGuid: "iMessage;-;+1234567890",
+  message: "Bold shaking fireworks!",
+  textStyles: [{ start: 0, end: 4, bold: true }],
+  textAnimation: "shake",
+  effectId: "com.apple.messages.effect.CKFireworksEffect",
+});
+```
+
+**Text Style Properties** (per range):
+
+| Property        | Type    | Description    |
+| --------------- | ------- | -------------- |
+| `start`         | number  | Start index    |
+| `end`           | number  | End index      |
+| `bold`          | boolean | Bold           |
+| `italic`        | boolean | Italic         |
+| `underline`     | boolean | Underline      |
+| `strikethrough` | boolean | Strikethrough  |
+
+**Text Animations** (whole message):
+
+| `textAnimation` | Description |
+| --------------- | ----------- |
+| `"big"`         | Big         |
+| `"small"`       | Small       |
+| `"shake"`       | Shake       |
+| `"nod"`         | Nod         |
+| `"explode"`     | Explode     |
+| `"ripple"`      | Ripple      |
+| `"bloom"`       | Bloom       |
+| `"jitter"`      | Jitter      |
+
+> Example: [message-styled.ts](./examples/message-styled.ts)
 
 ### Query Messages
 
@@ -1130,8 +1197,9 @@ bun run examples/<filename>.ts
 | [message-unsend.ts](./examples/message-unsend.ts)                               | Unsend messages       |
 | [message-edit.ts](./examples/message-edit.ts)                                   | Edit messages         |
 | [message-reaction.ts](./examples/message-reaction.ts)                           | Send Tapbacks         |
-| [message-effects.ts](./examples/message-effects.ts)                             | Message effects       |
-| [message-search.ts](./examples/message-search.ts)                               | Search messages       |
+| [message-effects.ts](./examples/message-effects.ts)                             | Message effects          |
+| [message-styled.ts](./examples/message-styled.ts)                               | Text styles & animations |
+| [message-search.ts](./examples/message-search.ts)                               | Search messages          |
 | [message-history.ts](./examples/message-history.ts)                             | Message history       |
 | [message-destination-caller-id.ts](./examples/message-destination-caller-id.ts) | Destination caller ID |
 
