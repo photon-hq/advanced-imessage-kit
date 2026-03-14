@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import type { TextStyle, TextAnimation } from "../types";
+import type { TextAnimation, TextStyle } from "../types";
 
 /**
  * Checks if an error indicates that a chat does not exist.

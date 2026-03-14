@@ -11,15 +11,7 @@ export interface TextStyle {
     strikethrough?: boolean;
 }
 
-export type TextAnimation =
-    | "big"
-    | "small"
-    | "shake"
-    | "nod"
-    | "explode"
-    | "ripple"
-    | "bloom"
-    | "jitter";
+export type TextAnimation = "big" | "small" | "shake" | "nod" | "explode" | "ripple" | "bloom" | "jitter";
 
 export type BubbleEffect =
     | "slam"
