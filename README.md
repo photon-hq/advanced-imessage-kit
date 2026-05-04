@@ -119,6 +119,15 @@ interface ClientConfig {
 }
 ```
 
+### Remote Server Setup
+
+If your SDK code runs on a different machine than the iMessage server:
+
+- `serverUrl` points to the server machine
+- `filePath` points to the SDK machine
+
+The SDK reads local files first, then uploads the file bytes to the server.
+
 ---
 
 ## Core Concepts
@@ -611,6 +620,38 @@ const message = await sdk.attachments.sendAttachment({
   fileName: "custom-name.jpg", // Optional
 });
 ```
+
+### Send Multiple Images In One Request
+
+Use `sendMultipartMessage()` when you want to send multiple images together as one multipart iMessage request:
+
+```typescript
+const message = await sdk.messages.sendMultipartMessage({
+  chatGuid: "iMessage;+;chat123456789",
+  parts: [
+    {
+      partIndex: 0,
+      filePath: "/path/to/image-1.jpg",
+    },
+    {
+      partIndex: 1,
+      filePath: "/path/to/image-2.jpg",
+    },
+    {
+      partIndex: 2,
+      filePath: "/path/to/image-3.jpg",
+    },
+  ],
+});
+```
+
+Notes:
+- `sendMultipartMessage()` uploads each file first, then sends all parts together in a single `/api/v1/message/multipart` request.
+- This requires the Private API path on the server.
+- The target `chatGuid` must already exist. If you only have a phone number/email, create or fetch the chat first.
+- If the SDK and server are on different machines, each `filePath` must exist on the SDK machine. The SDK uploads the file bytes to the server before sending.
+
+> Example: [message-multipart-images.ts](./examples/message-multipart-images.ts)
 
 ### Send Audio Messages
 

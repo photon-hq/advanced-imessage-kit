@@ -1,13 +1,34 @@
 import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import type { AxiosInstance } from "axios";
+import FormData from "form-data";
 import { createChatWithMessage, extractAddress, extractService, isChatNotExistError } from "../lib/auto-create-chat";
-import type { MessageResponse, SendMessageOptions } from "../types";
+import type {
+    MessageResponse,
+    SendMessageOptions,
+    SendMultipartMessageOptions,
+    SendMultipartMessagePart,
+} from "../types";
 
 export class MessageModule {
     constructor(
         private readonly http: AxiosInstance,
         private readonly enqueueSend: <T>(task: () => Promise<T>) => Promise<T> = (task) => task(),
     ) {}
+
+    private async uploadMultipartAttachment(part: Extract<SendMultipartMessagePart, { filePath: string }>) {
+        const fileName = part.fileName || path.basename(part.filePath);
+        const fileBuffer = await readFile(part.filePath);
+        const form = new FormData();
+        form.append("attachment", fileBuffer, fileName);
+
+        const response = await this.http.post("/api/v1/attachment/upload", form, {
+            headers: form.getHeaders(),
+        });
+
+        return response.data.data.path as string;
+    }
 
     async sendMessage(options: SendMessageOptions): Promise<MessageResponse> {
         return this.enqueueSend(async () => {
@@ -37,6 +58,66 @@ export class MessageModule {
                     service,
                 });
                 return { guid: tempGuid, text: options.message, dateCreated: Date.now() } as MessageResponse;
+            }
+        });
+    }
+
+    async sendMultipartMessage(options: SendMultipartMessageOptions): Promise<MessageResponse> {
+        return this.enqueueSend(async () => {
+            const tempGuid = options.tempGuid || randomUUID();
+
+            const uploadParts = async () => {
+                return await Promise.all(
+                    options.parts.map(async (part, index) => {
+                        const resolvedPartIndex = part.partIndex ?? index;
+
+                        if ("text" in part) {
+                            return {
+                                partIndex: resolvedPartIndex,
+                                text: part.text,
+                                ...(part.mention ? { mention: part.mention } : {}),
+                            };
+                        }
+
+                        const uploadedPath = await this.uploadMultipartAttachment(part);
+
+                        return {
+                            partIndex: resolvedPartIndex,
+                            attachment: uploadedPath,
+                            name: part.fileName || path.basename(uploadedPath),
+                        };
+                    }),
+                );
+            };
+
+            const send = async (chatGuid: string) => {
+                const parts = await uploadParts();
+                const payload = {
+                    chatGuid,
+                    tempGuid,
+                    parts,
+                    subject: options.subject,
+                    effectId: options.effectId,
+                    selectedMessageGuid: options.selectedMessageGuid,
+                    partIndex: options.partIndex ?? 0,
+                    ddScan: options.ddScan ?? false,
+                    attributedBody: options.attributedBody,
+                };
+
+                const response = await this.http.post("/api/v1/message/multipart", payload);
+                return response.data.data as MessageResponse;
+            };
+
+            try {
+                return await send(options.chatGuid);
+            } catch (error: unknown) {
+                if (isChatNotExistError(error)) {
+                    throw new Error(
+                        "Chat does not exist for multipart send. Use an existing chatGuid, or create the chat first before calling sendMultipartMessage().",
+                    );
+                }
+
+                throw error;
             }
         });
     }

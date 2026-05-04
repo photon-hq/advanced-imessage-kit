@@ -41,6 +41,30 @@ export interface SendMessageOptions {
     bubbleEffect?: BubbleEffect;
 }
 
+export type SendMultipartMessagePart =
+    | {
+          partIndex?: number;
+          text: string;
+          mention?: Record<string, unknown>;
+      }
+    | {
+          partIndex?: number;
+          filePath: string;
+          fileName?: string;
+      };
+
+export interface SendMultipartMessageOptions {
+    chatGuid: string;
+    parts: SendMultipartMessagePart[];
+    tempGuid?: string;
+    subject?: string;
+    effectId?: string;
+    selectedMessageGuid?: string;
+    partIndex?: number;
+    ddScan?: boolean;
+    attributedBody?: Record<string, unknown> | Record<string, unknown>[];
+}
+
 export interface SendIMessageAppOptions {
     chatGuid: string;
     balloonBundleId: string;
