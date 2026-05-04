@@ -51,6 +51,8 @@ async function main() {
             console.log(`${new Date(message.dateCreated).toLocaleString()}`);
         } catch (error) {
             handleError(error, "Failed to send multipart images");
+            await sdk.close();
+            process.exit(1);
         }
 
         await sdk.close();
@@ -60,4 +62,7 @@ async function main() {
     await sdk.connect();
 }
 
-main().catch(console.error);
+main().catch((error) => {
+    handleError(error, "Failed to start multipart image example");
+    process.exit(1);
+});
