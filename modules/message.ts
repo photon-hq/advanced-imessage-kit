@@ -17,8 +17,10 @@ export class MessageModule {
         private readonly enqueueSend: <T>(task: () => Promise<T>) => Promise<T> = (task) => task(),
     ) {}
 
-    private async uploadMultipartAttachment(part: Extract<SendMultipartMessagePart, { filePath: string }>) {
-        const fileName = part.fileName || path.basename(part.filePath);
+    private async uploadMultipartAttachment(
+        part: Extract<SendMultipartMessagePart, { filePath: string }>,
+        fileName = part.fileName || path.basename(part.filePath),
+    ) {
         const fileBuffer = await readFile(part.filePath);
         const form = new FormData();
         form.append("attachment", fileBuffer, fileName);
@@ -66,28 +68,35 @@ export class MessageModule {
         return this.enqueueSend(async () => {
             const tempGuid = options.tempGuid || randomUUID();
 
+            const buildPayloadPart = async (part: SendMultipartMessagePart, index: number) => {
+                const resolvedPartIndex = part.partIndex ?? index;
+
+                if ("text" in part) {
+                    return {
+                        partIndex: resolvedPartIndex,
+                        text: part.text,
+                        ...(part.mention ? { mention: part.mention } : {}),
+                    };
+                }
+
+                const fileName = part.fileName || path.basename(part.filePath);
+                const uploadedPath = await this.uploadMultipartAttachment(part, fileName);
+
+                return {
+                    partIndex: resolvedPartIndex,
+                    attachment: uploadedPath,
+                    name: fileName,
+                };
+            };
+
             const uploadParts = async () => {
-                return await Promise.all(
-                    options.parts.map(async (part, index) => {
-                        const resolvedPartIndex = part.partIndex ?? index;
+                const parts: Awaited<ReturnType<typeof buildPayloadPart>>[] = [];
 
-                        if ("text" in part) {
-                            return {
-                                partIndex: resolvedPartIndex,
-                                text: part.text,
-                                ...(part.mention ? { mention: part.mention } : {}),
-                            };
-                        }
+                for (const [index, part] of options.parts.entries()) {
+                    parts.push(await buildPayloadPart(part, index));
+                }
 
-                        const uploadedPath = await this.uploadMultipartAttachment(part);
-
-                        return {
-                            partIndex: resolvedPartIndex,
-                            attachment: uploadedPath,
-                            name: part.fileName || path.basename(uploadedPath),
-                        };
-                    }),
-                );
+                return parts;
             };
 
             const send = async (chatGuid: string) => {

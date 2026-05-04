@@ -8,10 +8,7 @@ const IMAGE_PATHS = (process.env.IMAGE_PATHS || "")
     .map((value) => value.trim())
     .filter(Boolean);
 
-const DEFAULT_IMAGE_PATHS = [
-    path.join(__dirname, "test-image.png"),
-    path.join(__dirname, "test-image.png"),
-];
+const DEFAULT_IMAGE_PATHS = [path.join(__dirname, "test-image.png"), path.join(__dirname, "test-image.png")];
 
 async function main() {
     const sdk = createSDK();
