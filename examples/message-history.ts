@@ -119,7 +119,6 @@ function formatMessage(msg: MessageResponse, index: number): string {
    From: ${sender}
    Target: ${msg.associatedMessageGuid || "unknown"}
    Date: ${date}`;
-        case "message":
         default: {
             const text = msg.text || "";
             const attachmentCount = msg.attachments?.length || 0;
