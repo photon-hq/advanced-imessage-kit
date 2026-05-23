@@ -40,7 +40,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
+      id-token: write
     with:
       service-name: advanced-imessage-kit
+      use-oidc: true
       build-command: "bun run build"
     secrets: inherit
