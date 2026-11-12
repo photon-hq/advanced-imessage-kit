@@ -9,7 +9,7 @@
 </div>
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-^5-blue.svg)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](./LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2.svg?logo=discord&logoColor=white)](https://discord.gg/RSJUUHTV)
 
 > [!NOTE]
@@ -1298,7 +1298,7 @@ Download `llms.txt` for language model context:
 
 ## License
 
-MIT License
+Apache License 2.0
 
 ## Author
 
